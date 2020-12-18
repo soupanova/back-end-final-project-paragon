@@ -1,0 +1,23 @@
+{
+  "name": "back-end-final-project-paragon",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SchoolOfCode/back-end-final-project-paragon.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/SchoolOfCode/back-end-final-project-paragon/issues"
+  },
+  "homepage": "https://github.com/SchoolOfCode/back-end-final-project-paragon#readme",
+  "devDependencies": {
+    "eslint-config-prettier": "^7.0.0"
+  }
+}
