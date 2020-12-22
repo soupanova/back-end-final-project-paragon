@@ -35,6 +35,10 @@ const createWebSocketServer = ({
             const parsed = JSON.parse(rawData)
             console.log('Received', parsed)
 
+            if (!parsed.gameId) {
+                console.log('No game ID', parsed)
+            }
+
             const handler =
                 socketMessageActionHandlers[parsed.action] ??
                 socketMessageActionHandlers.$default

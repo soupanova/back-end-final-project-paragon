@@ -34,9 +34,13 @@ const updateGameById = (gameId, updates) => {
     })
 }
 
+const deleteGameById = (gameId) => {
+    return (gamesCache[gameId] = undefined)
+}
+
 const createNewGame = ({
     readyingSeconds = 10,
-    totalRounds = 5,
+    totalRounds = 2,
     broadcasterFunc,
 } = {}) => {
     const game = {
@@ -142,32 +146,242 @@ const delay = (seconds) =>
     })
 
 const playGame = async (gameId, broadcasterFunc) => {
-    // Need to know who's still in the game.
-    const game = getGameById(gameId)
+    const secondsToWait = {
+        afterGameStarted: 2,
+        forAnswer: 2,
+        forAnswerBuffer: 1,
+        forReveal: 2,
+    }
+
+    let game = getGameById(gameId)
 
     broadcasterFunc(
-        { action: 'GAME_STARTED' },
-        game.players.map(({ socketId }) => socketId)
+        {
+            gameId: game.gameId,
+            action: 'GAME_STARTED',
+        },
+        ...game.players.map(({ socketId }) => socketId)
     )
 
-    await delay(3)
+    await delay(secondsToWait.afterGameStarted)
 
-    for (let i = 0; i < Math.min(game.players.length, game.totalRounds); ++i) {
+    for (let roundNumber = 1; roundNumber <= game.totalRounds; ++roundNumber) {
         game.currentTurnId = createRandomId()
         game.players.forEach((player) => {
             player.currentAnswer = null
         })
 
-        const factOwner = game.players[i]
-
-        // Question 1: Whose fact is it?
-        broadcasterFunc({
-            action: 'GUESS_WHO',
-            facts: factOwner.shuffledFactAndLie,
+        const factOwner = game.players[roundNumber - 1]
+        const participants = game.players.map(({ playerId, displayName }) => {
+            return {
+                choiceId: playerId,
+                displayName,
+            }
         })
 
-        await delay(3)
+        const leaderboard = game.players
+            .map(({ displayName, score }) => {
+                return {
+                    displayName,
+                    score,
+                }
+            })
+            .sort((a, b) => a.score - b.score)
+
+        // Wait for players to answer.
+        for (
+            let secondsLeft = secondsToWait.forAnswer;
+            secondsLeft > 0;
+            --secondsLeft
+        ) {
+            // Question 1: Whose fact is it?
+            broadcasterFunc(
+                {
+                    gameId,
+                    roundNumber,
+                    action: 'GUESS_WHO_TIMER',
+                    facts: factOwner.shuffledFactAndLie,
+                    participants,
+                    leaderboard,
+                    secondsLeft,
+                    turnId: game.currentTurnId,
+                },
+                ...game.players.map(({ socketId }) => socketId)
+            )
+            await delay(1)
+        }
+        // Get answers from clients, give it a second in case of
+        // network congestion.
+        broadcasterFunc(
+            {
+                gameId,
+                action: 'GUESS_WHO_CHOICE',
+                roundNumber,
+                turnId: game.currentTurnId,
+                participants,
+            },
+            ...game.players.map(({ socketId }) => socketId)
+        )
+        await delay(secondsToWait.forAnswerBuffer)
+
+        // Players' current answers have been updated
+        // (asynchronously in the background).
+
+        // Check + award players point where appropriate
+        game = updateGameById(gameId, {
+            currentTurnId: null,
+            players: game.players.map((player) => {
+                const answerIsCorrect =
+                    player.currentAnswer === factOwner.playerId
+                return {
+                    ...player,
+                    score: player.score + (answerIsCorrect ? 1 : 0),
+                }
+            }),
+        })
+
+        for (
+            let secondsLeft = secondsToWait.forAnswer;
+            secondsLeft > 0;
+            --secondsLeft
+        ) {
+            broadcasterFunc(
+                {
+                    gameId,
+                    roundNumber,
+                    action: 'REVEAL_WHO_TIMER',
+                    secondsLeft,
+                },
+                ...game.players.map(({ socketId }) => socketId)
+            )
+            await delay(1)
+        }
+
+        // Broadcast whose fact it was
+        broadcasterFunc(
+            {
+                gameId,
+                action: 'REVEAL_WHO',
+                roundNumber,
+                displayName: factOwner.displayName,
+                turnId: game.currentTurnId,
+            },
+            ...game.players.map(({ socketId }) => socketId)
+        )
+        await delay(secondsToWait.forReveal)
+
+        // Question 2: Which fact was fake?
+        game.currentTurnId = createRandomId()
+        game.players.forEach((player) => {
+            player.currentAnswer = null
+        })
+
+        // Wait for players to answer.
+        for (
+            let secondsLeft = secondsToWait.forAnswer;
+            secondsLeft > 0;
+            --secondsLeft
+        ) {
+            // Question 2: Which fact was fake?
+            broadcasterFunc(
+                {
+                    gameId,
+                    roundNumber,
+                    action: 'GUESS_FAKE_FACT_TIMER',
+                    facts: factOwner.shuffledFactAndLie,
+                    secondsLeft,
+                    turnId: game.currentTurnId,
+                },
+                ...game.players.map(({ socketId }) => socketId)
+            )
+            await delay(1)
+        }
+        // Get answers from clients, give it a second in case of
+        // network congestion.
+        broadcasterFunc(
+            {
+                gameId,
+                roundNumber,
+                action: 'GUESS_FAKE_FACT_CHOICE',
+                turnId: game.currentTurnId,
+                // Maybe
+                participants,
+            },
+            ...game.players.map(({ socketId }) => socketId)
+        )
+        await delay(secondsToWait.forAnswerBuffer)
+
+        // Players' current answers have been updated
+        // (asynchronously in the background).
+
+        // Check + award players point where appropriate
+        game = updateGameById(gameId, {
+            currentTurnId: null,
+            players: game.players.map((player) => {
+                const answerIsCorrect = player.currentAnswer === factOwner.lie
+                return {
+                    ...player,
+                    score: player.score + (answerIsCorrect ? 1 : 0),
+                }
+            }),
+        })
+
+        for (let secondsLeft = 5; secondsLeft > 0; --secondsLeft) {
+            broadcasterFunc(
+                {
+                    gameId,
+                    roundNumber,
+                    action: 'REVEAL_FAKE_FACT_TIMER',
+                    secondsLeft,
+                },
+                ...game.players.map(({ socketId }) => socketId)
+            )
+            await delay(1)
+        }
+
+        // Broadcast whose fact it was
+        broadcasterFunc(
+            {
+                gameId,
+                roundNumber,
+                action: 'REVEAL_FAKE_FACT',
+                turnId: game.currentTurnId,
+                displayName: factOwner.displayName,
+                fact: factOwner.fact,
+                lie: factOwner.lie,
+            },
+            ...game.players.map(({ socketId }) => socketId)
+        )
+        await delay(secondsToWait.forReveal)
     }
+
+    game = getGameById(gameId)
+    const leaderboard = game.players
+        .map(({ displayName, score }) => {
+            return {
+                displayName,
+                score,
+            }
+        })
+        .sort((a, b) => a.score - b.score)
+
+    // All rounds have been played.
+
+    broadcasterFunc(
+        {
+            gameId,
+            action: 'PODIUM',
+            turnId: game.currentTurnId,
+            leaderboard,
+            top3: leaderboard.slice(0, 3),
+        },
+        ...game.players.map(({ socketId }) => socketId)
+    )
+
+    await delay(2)
+
+    deleteGameById(gameId)
+    console.log('Deleted ' + gameId)
 }
 
 module.exports = {
@@ -175,4 +389,5 @@ module.exports = {
     getGameById,
     doesIdExist,
     joinGame,
+    updateGameById,
 }

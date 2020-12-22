@@ -1,7 +1,12 @@
 // Actions that the server wants to listen
 // (and response accordingly) to.
 
-const { createNewGame, getGameById, joinGame } = require('../../models/games')
+const {
+    createNewGame,
+    getGameById,
+    joinGame,
+    updateGameById,
+} = require('../../models/games')
 
 module.exports = {
     START_GAME_REQUEST(data, sendData, broadcasterFunc, socketId) {
@@ -19,6 +24,10 @@ module.exports = {
             readyingSeconds: 5,
             broadcasterFunc,
         })
+
+        if (!gameId) {
+            throw new Error('Bad game id ' + gameId)
+        }
 
         sendData({
             action: data.action,
@@ -40,10 +49,85 @@ module.exports = {
 
         sendData({
             action: 'JOIN_GAME',
+            gameId: gameId,
         })
     },
 
-    $default(data, sendData, socket) {
+    CHOSEN_PERSON(data, sendData, _, socketId) {
+        const game = getGameById(data.gameId)
+
+        if (!game) {
+            return console.warn('No game for game id' + data.gameId)
+        }
+
+        console.log({ playersBeforeUpdate: game.players })
+
+        if (game.currentTurnId !== data.turnId) {
+            return
+        }
+        const foundIndex = game.players.findIndex(
+            (p) => p.socketId === socketId
+        )
+        if (-1 === foundIndex) {
+            return console.warn("Player doesn't appear to be in game.")
+        }
+        const updatedGame = updateGameById(data.gameId, {
+            players: [
+                ...game.players.slice(0, foundIndex),
+                {
+                    ...game.players[foundIndex],
+                    currentAnswer: data.choice,
+                },
+                ...game.players.slice(foundIndex + 1),
+            ],
+        })
+
+        console.log({ playersAfterUpdate: updatedGame.players })
+
+        // Front end can update the button.
+        sendData({
+            action: 'CHOSEN_PERSON_CONFIRMATION',
+            gameId: data.gameId,
+            choice: data.choice,
+        })
+    },
+
+    CHOSEN_FACT(data, sendData, _, socketId) {
+        const game = getGameById(data.gameId)
+
+        if (!game) {
+            return console.warn('No game for game id' + data.gameId)
+        }
+
+        if (game.currentTurnId !== data.turnId) {
+            return
+        }
+        const foundIndex = game.players.findIndex(
+            (p) => p.socketId === socketId
+        )
+        if (-1 === foundIndex) {
+            return console.warn("Player doesn't appear to be in game.")
+        }
+        updateGameById(data.gameId, {
+            players: [
+                ...game.players.slice(0, foundIndex),
+                {
+                    ...game.players[foundIndex],
+                    currentAnswer: data.choice,
+                },
+                ...game.players.slice(foundIndex + 1),
+            ],
+        })
+
+        // Front end can update the button.
+        sendData({
+            action: 'CHOSEN_FAKE_FACT_CONFIRMATION',
+            gameId: data.gameId,
+            choice: data.choice,
+        })
+    },
+
+    $default(data, sendData, _) {
         console.error('Unexpected payload', data)
     },
 }
