@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
+    </head>
+    <body>
+        <main>
+            <ul style="white-space: pre"></ul>
+        </main>
+        <button id="start">Start game</button>
+        <button id="join">Join game</button>
+
+        <script>
+            const startButton = document.querySelector('#start')
+            const joinButton = document.querySelector('#join')
+            const ul = document.querySelector('ul')
+
+            let ws = new WebSocket('ws://localhost:8080')
+            let game = { gameId: undefined }
+
+            const handlers = {
+                START_GAME_REQUEST: ({ gameId }) => {
+                    game.gameId = gameId
+                },
+            }
+
+            ws.onmessage = ({ data: serialised }) => {
+                console.log(serialised)
+
+                const li = document.createElement('li')
+                li.textContent = serialised
+                ul.appendChild(li)
+
+                const data = JSON.parse(serialised)
+
+                if (!handlers[data.action]) {
+                    return console.warn('Unsupported action', data.action)
+                }
+
+                handlers[data.action](data)
+                console.log('Ran', data.action)
+            }
+
+            startButton.addEventListener('click', () => {
+                ws.send(
+                    JSON.stringify({
+                        action: 'START_GAME_REQUEST',
+                        gameId: game.gameId,
+                    })
+                )
+            })
+
+            joinButton.addEventListener('click', () => {
+                ws.send(
+                    JSON.stringify({
+                        action: 'JOIN_GAME_REQUEST',
+                        gameId: game.gameId,
+                        player: {
+                            displayName: 'Abe',
+                            fact: 'Some statement (but really a fact)',
+                            lie: 'Some statement (but really a lie)',
+                        },
+                    })
+                )
+            })
+        </script>
+    </body>
+</html>
