@@ -63,6 +63,10 @@
                         })
                     )
                 },
+                REVEAL_FAKE_FACT() {},
+                CHOSEN_FAKE_FACT_CONFIRMATION: () => {},
+                REVEAL_FAKE_FACT_TIMER: () => {},
+                PODIUM: () => {},
             }
 
             ws.onmessage = ({ data: serialised }) => {
@@ -85,8 +89,11 @@
             startButton.addEventListener('click', () => {
                 ws.send(
                     JSON.stringify({
-                        action: 'START_GAME_REQUEST',
-                        gameId: game.gameId,
+                        action: 'CREATE_AND_JOIN_GAME',
+                        displayName: 'Abe',
+                        fact: 'Some statement (but really a fact)',
+                        lie: 'Some statement (but really a lie)',
+                        // gameId: game.gameId,
                     })
                 )
             })

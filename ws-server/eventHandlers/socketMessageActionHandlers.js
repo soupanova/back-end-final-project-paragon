@@ -1,43 +1,38 @@
-// Actions that the server wants to listen
-// (and response accordingly) to.
+'use-strict'
 
+const { getGameById, updateGameById } = require('../../models/games')
 const {
-    createNewGame,
-    getGameById,
-    joinGame,
-    updateGameById,
-} = require('../../models/games')
+    createAndJoinNewGame,
+    joinExistingGame,
+} = require('../../controllers/factsGame')
 
 module.exports = {
-    START_GAME_REQUEST(data, sendData, broadcasterFunc, socketId) {
-        // TODO: There should probably be a "game" reducer, so that game state
-        // can only be manipulated in a finite number of ways.
-
+    CREATE_AND_JOIN_GAME({ data, sendData, broadcastData, socketId }) {
         if (data.gameId) {
             return console.warn(
-                'Ignoring duplicate START_GAME_REQUEST received.'
+                `Request for new game shouldn't already contain a "gameId".`,
+                data
             )
         }
 
-        const { gameId } = createNewGame({
-            creatorSocketId: socketId,
-            readyingSeconds: 5,
-            broadcasterFunc,
+        const { displayName, fact, lie } = data.player
+
+        const { gameId } = createAndJoinNewGame({
+            creator: {
+                displayName,
+                fact,
+                lie,
+                socketId,
+            },
+            broadcastData,
         })
 
-        if (!gameId) {
-            throw new Error('Bad game id ' + gameId)
-        }
-
-        sendData({
-            action: data.action,
-            gameId,
-        })
+        sendData({ action: data.action, gameId })
     },
 
-    JOIN_GAME_REQUEST(data, sendData, _, socketId) {
+    JOIN_EXISTING_GAME(data, sendData, _, socketId) {
         // Check here if data is good.
-        const { error, gameId } = joinGame({
+        const { error, gameId } = joinExistingGame({
             gameId: data.gameId,
             player: {
                 ...data.player,
@@ -45,12 +40,12 @@ module.exports = {
             },
         })
 
-        if (error) return
-
-        sendData({
-            action: 'JOIN_GAME',
-            gameId: gameId,
-        })
+        if (!error) {
+            sendData({
+                action: 'JOIN_EXISTING_GAME',
+                gameId: gameId,
+            })
+        }
     },
 
     CHOSEN_PERSON(data, sendData, _, socketId) {
@@ -59,8 +54,6 @@ module.exports = {
         if (!game) {
             return console.warn('No game for game id' + data.gameId)
         }
-
-        console.log({ playersBeforeUpdate: game.players })
 
         if (game.currentTurnId !== data.turnId) {
             return
@@ -71,7 +64,7 @@ module.exports = {
         if (-1 === foundIndex) {
             return console.warn("Player doesn't appear to be in game.")
         }
-        const updatedGame = updateGameById(data.gameId, {
+        updateGameById(data.gameId, {
             players: [
                 ...game.players.slice(0, foundIndex),
                 {
@@ -81,8 +74,6 @@ module.exports = {
                 ...game.players.slice(foundIndex + 1),
             ],
         })
-
-        console.log({ playersAfterUpdate: updatedGame.players })
 
         // Front end can update the button.
         sendData({
