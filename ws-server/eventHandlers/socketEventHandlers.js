@@ -1,13 +1,11 @@
-const messageActionHandlers = require('./socketMessageActionHandlers')
-
 module.exports = {
     error(err) {
         console.error(err)
     },
     open(socket) {
-        // Add
+        console.log('Socket connected', socket)
     },
     close(code, reason) {
-        console.log(`Socket closing, reason: ${reason}`)
+        console.log(`Socket closing, reason: ${reason}`, code)
     },
 }
