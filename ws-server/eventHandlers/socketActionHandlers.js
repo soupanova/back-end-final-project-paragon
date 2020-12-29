@@ -52,6 +52,7 @@ module.exports = {
 
         console.log('Waiting for players to join')
         await delay(readyingDuration)
+        console.log(`Finished waiting for players to join ${readyingDuration}`)
 
         /**
          * Try to start the game.
@@ -77,6 +78,8 @@ module.exports = {
             broadcastFunc: broadcastData,
         })
         broadcastToGame({ gameId, action: actions.GAME_STARTED })
+
+        await delay(2)
 
         /**
          * Try to play the game.

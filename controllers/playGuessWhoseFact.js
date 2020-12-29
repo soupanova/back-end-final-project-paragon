@@ -3,12 +3,13 @@
 
 const actions = require('../constants/actions')
 const { secondsToWait } = require('../constants/game')
+const { getGame } = require('../models/factsGame/getGame')
 const {
     incrementPlayersScores,
 } = require('../models/factsGame/incrementPlayersScores')
-const { initialiseTurn } = require('../models/factsGame/initialiseTurn')
-const { lockAnswers } = require('../models/factsGame/lockAnswers')
-const { unlockAnswers } = require('../models/factsGame/unlockAnswers')
+// const { initialiseTurn } = require('../models/factsGame/initialiseTurn')
+// const { lockAnswers } = require('../models/factsGame/lockAnswers')
+// const { unlockAnswers } = require('../models/factsGame/unlockAnswers')
 
 const { broadcastForNSeconds } = require('./broadcastForNSeconds')
 const { delay } = require('./delay')
@@ -22,7 +23,8 @@ module.exports.playGuessWhoseFact = async ({
     broadcastToGame,
 }) => {
     {
-        const game = await initialiseTurn({ gameId })
+        const game = await getGame({ gameId })
+        // const game = await initialiseTurn({ gameId })
         const [question] = game.rounds[roundNumber - 1]
         const participants = game.cachedChoices
 
@@ -52,14 +54,16 @@ module.exports.playGuessWhoseFact = async ({
         })
 
         // Prompt clients for answers.
-        broadcastToGame({
-            gameId,
-            action: actions.GUESS_WHO_CHOICE,
-            roundNumber,
-            turnId: game.currentTurnId,
-            participants,
-        })
+        // broadcastToGame({
+        //     gameId,
+        //     action: actions.GUESS_WHO_CHOICE,
+        //     roundNumber,
+        //     turnId: game.currentTurnId,
+        //     participants,
+        // })
+    }
 
+    {
         // Give it a second in case of network congestion.
         await delay(secondsToWait.forAnswerBuffer)
     }
@@ -72,9 +76,10 @@ module.exports.playGuessWhoseFact = async ({
         // TODO: GAME INCREMENT_SCORES
         // TODO: PLAYER INCREMENT_SCORE
 
-        console.log('About to lock answers')
-        const game = await lockAnswers({ gameId })
-        console.log('Locked answers')
+        // console.log('About to lock answers')
+        // const game = await lockAnswers({ gameId })
+        // console.log('Locked answers')
+        const game = await getGame({ gameId })
 
         const [question] = game.rounds[roundNumber - 1]
 
@@ -94,28 +99,26 @@ module.exports.playGuessWhoseFact = async ({
         console.log("Incremented players' scores")
 
         // These things are unrelated and can be done at the same time.
-        await Promise.all([
-            unlockAnswers({ gameId }),
-            broadcastForNSeconds({
-                totalSeconds: secondsToWait.beforeReveal,
-                broadcastFunc(secondsLeft) {
-                    broadcastToGame({
-                        gameId,
-                        roundNumber,
-                        action: actions.REVEAL_WHO_TIMER,
-                        secondsLeft,
-                    })
-                },
-            }),
-        ])
+        await broadcastForNSeconds({
+            totalSeconds: secondsToWait.beforeReveal,
+            broadcastFunc(secondsLeft) {
+                broadcastToGame({
+                    gameId,
+                    roundNumber,
+                    action: actions.REVEAL_WHO_TIMER,
+                    secondsLeft,
+                })
+            },
+        })
 
-        broadcastToGame({
+        await broadcastToGame({
             gameId,
             action: actions.REVEAL_WHO,
             roundNumber,
             displayName: question.correctAnswer.text,
             // turnId: game.currentTurnId,
         })
+
         await delay(secondsToWait.afterReveal)
     }
 }
