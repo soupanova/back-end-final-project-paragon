@@ -1,4 +1,4 @@
-'use-strict'
+'use strict'
 
 const { v4: uuidv4, validate: uuidValidate } = require('uuid')
 const { STATE } = require('../../constants/game')
