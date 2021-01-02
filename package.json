@@ -4,6 +4,7 @@
     "description": "",
     "main": "index.js",
     "scripts": {
+        "start": "node ./ws-server",
         "dev-ws": "nodemon -r dotenv/config ./ws-server",
         "test": "jest --setupFiles dotenv/config",
         "reinitialiseTable": "node -r dotenv/config ./models/db/scripts/reinitialiseTable.js"
