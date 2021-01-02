@@ -1,4 +1,4 @@
-const Joi = require('Joi')
+const Joi = require('joi')
 
 /**
  * Some schemas that will probably be used in several different files
