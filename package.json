@@ -4,8 +4,9 @@
     "description": "",
     "main": "index.js",
     "scripts": {
-        "dev-ws": "nodemon ./ws-server",
-        "test": "jest"
+        "dev-ws": "nodemon -r dotenv/config ./ws-server",
+        "test": "jest --setupFiles dotenv/config",
+        "reinitialiseTable": "node -r dotenv/config ./models/db/scripts/reinitialiseTable.js"
     },
     "repository": {
         "type": "git",
@@ -20,6 +21,7 @@
     "homepage": "https://github.com/SchoolOfCode/back-end-final-project-paragon#readme",
     "devDependencies": {
         "@types/jest": "^26.0.19",
+        "dotenv": "^8.2.0",
         "eslint-config-prettier": "^7.0.0",
         "jest": "^26.6.3",
         "nodemon": "^2.0.6"

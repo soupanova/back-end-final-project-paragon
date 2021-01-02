@@ -19,7 +19,7 @@ const dynamoDbClient = new AWS.DynamoDB.DocumentClient({
     service: dynamoDb,
 })
 
-const FACTS_TABLE_NAME = 'FactsGames'
+const { FACTS_TABLE_NAME } = process.env
 
 const FACTS_TABLE_CREATION_CONFIG = {
     TableName: FACTS_TABLE_NAME,

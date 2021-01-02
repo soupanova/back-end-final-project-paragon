@@ -1,10 +1,10 @@
 // @ts-check
 'use strict'
 
-const { startGame } = require('../models/factsGame/startGame')
+const { startGame } = require('../../models/factsGame/startGame')
 const {
     initialiseQuestions,
-} = require('../models/factsGame/initialiseQuestions')
+} = require('../../models/factsGame/initialiseQuestions')
 
 /**
  * Mark the game as having started and initialise its questions.

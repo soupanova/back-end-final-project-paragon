@@ -15,7 +15,7 @@ module.exports.updateCurrentAnswer = async ({ gameId, playerId, choice }) => {
                 '#currentAnswer': 'currentAnswer',
             },
             ExpressionAttributeValues: {
-                ':choice': choice(),
+                ':choice': choice,
             },
             ReturnValues: 'ALL_NEW',
         })

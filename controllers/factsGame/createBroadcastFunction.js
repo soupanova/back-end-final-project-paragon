@@ -3,7 +3,7 @@
 
 const {
     getSocketIdsForGame,
-} = require('../models/factsGame/getSocketIdsForGame')
+} = require('../../models/factsGame/getSocketIdsForGame')
 
 /**
  * Returns a function which can broadcast a given message to all players in the game.

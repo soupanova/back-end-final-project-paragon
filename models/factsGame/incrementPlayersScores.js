@@ -15,7 +15,7 @@ module.exports.incrementPlayersScores = async ({ gameId, playerIds }) => {
                 ...acc,
                 updateExpressions: [
                     ...acc.updateExpressions,
-                    `#players.#p${i}.#score = #players.#p${i}.#score + 1`,
+                    `#players.#p${i}.#score = #players.#p${i}.#score + :one`,
                 ],
                 expressionAttributeNames: {
                     ...acc.expressionAttributeNames,
@@ -28,9 +28,11 @@ module.exports.incrementPlayersScores = async ({ gameId, playerIds }) => {
             expressionAttributeNames: {
                 '#currentTurnId': 'currentTurnId',
                 '#players': playerIds.length > 0 ? 'players' : undefined,
+                '#score': playerIds.length > 0 ? 'score' : undefined,
             },
             expressionAttributeValues: {
                 ':uuid': uuidv4(),
+                ':one': playerIds.length > 0 ? 1 : undefined,
             },
         }
     )

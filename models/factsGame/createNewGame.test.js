@@ -3,7 +3,7 @@
 const { validate: uuidValidate, v4: uuidv4 } = require('uuid')
 const { STATE } = require('../../constants/game')
 const { createNewGame } = require('./createNewGame')
-const { createNewPlayer } = require('../factsGamePlayer/createNewPlayer')
+const { createNewPlayer } = require('./createNewPlayer')
 
 /**
  * See: https://jestjs.io/docs/en/getting-started

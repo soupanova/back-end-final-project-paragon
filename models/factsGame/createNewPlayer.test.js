@@ -1,6 +1,6 @@
 const { v4: uuidv4, validate: uuidValidate } = require('uuid')
 
-const { createNewPlayer } = require('./factsGamePlayer')
+const { createNewPlayer } = require('./createNewPlayer')
 
 describe('createNewPlayer: validate returned object', () => {
     const playerArgs = {
@@ -8,6 +8,7 @@ describe('createNewPlayer: validate returned object', () => {
         lie: uuidv4(),
         displayName: uuidv4(),
         socketId: uuidv4(),
+        playerId: uuidv4(),
     }
 
     const newPlayer = createNewPlayer(playerArgs)
@@ -22,7 +23,6 @@ describe('createNewPlayer: validate returned object', () => {
                 playerArgs.lie,
                 playerArgs.fact,
             ]),
-            playerId: expect.any(String),
         })
 
         expect(uuidValidate(newPlayer.playerId)).toBe(true)

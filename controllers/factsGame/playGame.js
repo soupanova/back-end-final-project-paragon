@@ -1,12 +1,12 @@
 // @ts-check
 'use strict'
 
-const { getGame } = require('../models/factsGame/getGame')
+const { getGame } = require('../../models/factsGame/getGame')
 const { playGuessWhoseFact } = require('./playGuessWhoseFact')
 const { playGuessWhichFact } = require('./playGuessWhichFact')
 const { delay } = require('./delay')
-const { deleteGame } = require('../models/factsGame/deleteGame')
-const actions = require('../constants/actions')
+const { deleteGame } = require('../../models/factsGame/deleteGame')
+const actions = require('../../constants/actions')
 
 module.exports.playGame = async ({ gameId, broadcastToGame }) => {
     console.log('Playing the game')

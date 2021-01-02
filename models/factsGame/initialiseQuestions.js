@@ -1,7 +1,6 @@
 // @ts-check
 'use strict'
 
-const { v4: uuidv4 } = require('uuid')
 const { dynamoDbClient, FACTS_TABLE_NAME } = require('../db')
 
 module.exports.initialiseQuestions = (game) => {
@@ -61,6 +60,7 @@ module.exports.initialiseQuestions = (game) => {
             correctAnswer: {
                 choiceId: player.lie,
                 text: player.lie,
+                displayName: player.displayName,
             },
         }
 

@@ -1,15 +1,15 @@
 // @ts-check
 'use strict'
 
-const { startGame } = require('../../controllers/startGame')
-const { createGame } = require('../../controllers/createGame')
-const { playGame } = require('../../controllers/playGame')
-const { joinGame } = require('../../controllers/joinGame')
+const { startGame } = require('../../controllers/factsGame/startGame')
+const { createGame } = require('../../controllers/factsGame/createGame')
+const { playGame } = require('../../controllers/factsGame/playGame')
+const { joinGame } = require('../../controllers/factsGame/joinGame')
 
 const actions = require('../../constants/actions')
 const {
     createBroadcastFunction,
-} = require('../../controllers/createBroadcastFunction')
+} = require('../../controllers/factsGame/createBroadcastFunction')
 const { deleteGame } = require('../../models/factsGame/deleteGame')
 const {
     updateCurrentAnswer,
@@ -123,6 +123,7 @@ module.exports = {
         try {
             await updateCurrentAnswer({ gameId, playerId, choice })
         } catch (err) {
+            console.error(err)
             sendData({
                 action: actions.ERROR,
                 gameId,

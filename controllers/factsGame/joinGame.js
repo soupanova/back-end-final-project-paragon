@@ -1,8 +1,8 @@
 // @ts-check
 'use strict'
 
-const { addPlayerToGame } = require('../models/factsGame/addPlayerToGame')
-const { createNewPlayer } = require('../models/factsGamePlayer/createNewPlayer')
+const { addPlayerToGame } = require('../../models/factsGame/addPlayerToGame')
+const { createNewPlayer } = require('../../models/factsGame/createNewPlayer')
 
 /**
  * Create the game (with creator) and write to database.
