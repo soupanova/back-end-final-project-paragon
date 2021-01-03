@@ -17,7 +17,13 @@ const WEBSOCKET_CLIENT_EVENTS = {
     CLOSE: 'close',
 }
 
+/**
+ * Use to avoid namespace collision or overwriting an existing property.
+ */
+const SOCKET_ID_PROPERTY = Symbol('socketId')
+
 module.exports = {
     WEBSOCKET_SERVER_EVENTS,
     WEBSOCKET_CLIENT_EVENTS,
+    SOCKET_ID_PROPERTY,
 }
