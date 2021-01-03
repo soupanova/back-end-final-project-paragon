@@ -15,11 +15,10 @@ const {
     updateCurrentAnswer,
 } = require('../../models/factsGame/updateCurrentAnswer')
 
-const delay = (seconds) => {
-    return new Promise((resolve) => setTimeout(resolve, seconds * 1000))
-}
+const { delay } = require('../../controllers/factsGame/delay')
+const { SOCKET_ID_PROPERTY } = require('../../constants/websocket')
 
-module.exports = {
+const socketActionHandlers = {
     async CREATE_AND_JOIN_GAME({ data, sendData, broadcastData, socketId }) {
         if (data.gameId) {
             return console.warn(
@@ -136,4 +135,63 @@ module.exports = {
     $default({ data }) {
         console.error('Unexpected message', data)
     },
+}
+
+const tryToParseJson = (json) => {
+    try {
+        return { parsed: JSON.parse(json) }
+    } catch (err) {
+        return { parsingError: err.message }
+    }
+}
+
+const createSendDataFunction = (socket) => {
+    return function sendData(dataToSend) {
+        if (!dataToSend.gameId) {
+            console.warn('gameId missing', dataToSend)
+        }
+        const serialised = JSON.stringify(dataToSend, null, 2)
+        socket.send(serialised)
+        console.log('Sent back', serialised)
+    }
+}
+
+module.exports.registerActionHandlers = (socket, broadcastData) => {
+    const sendData = createSendDataFunction(socket)
+
+    socket.on('message', (rawData) => {
+        const { parsed, parsingError } = tryToParseJson(rawData)
+        if (parsingError) {
+            console.log('Malformed message', rawData)
+            return sendData({ action: 'ERROR', error: parsingError })
+        }
+        console.log('Received', parsed)
+
+        const messageDoesntHaveGameIdButShould =
+            !parsed.gameId && parsed.action !== actions.CREATE_AND_JOIN_GAME
+        if (messageDoesntHaveGameIdButShould) {
+            console.warn('No game ID', parsed)
+            return sendData({
+                action: 'ERROR',
+                error: 'gameId missing',
+                received: rawData,
+            })
+        }
+
+        try {
+            const handler =
+                socketActionHandlers[parsed.action] ??
+                socketActionHandlers.$default
+
+            handler({
+                data: parsed,
+                sendData,
+                broadcastData,
+                socketId: socket[SOCKET_ID_PROPERTY],
+            })
+        } catch (err) {
+            console.warn(`Error whilst handling ${parsed.action}`)
+            console.error(err)
+        }
+    })
 }
