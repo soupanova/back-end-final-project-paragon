@@ -36,7 +36,9 @@ module.exports.playGame = async ({ gameId, broadcastToGame }) => {
                 action: actions.PODIUM,
                 turnId: game.currentTurnId,
                 leaderboard,
-                top3: leaderboard.slice(0, 3),
+                winners: leaderboard
+                    .filter(({ score }) => score === leaderboard[0].score)
+                    .map(({ displayName }) => displayName),
             })
 
             await delay(2)
