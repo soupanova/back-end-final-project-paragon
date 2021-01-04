@@ -37,6 +37,7 @@ module.exports.playGuessWhichFact = async ({
                     facts: question.statements,
                     secondsLeft,
                     turnId: game.currentTurnId,
+                    displayName: question.correctAnswer.displayName,
                 })
             },
         })
@@ -79,6 +80,7 @@ module.exports.playGuessWhichFact = async ({
                     roundNumber,
                     action: actions.REVEAL_FAKE_FACT_TIMER,
                     secondsLeft,
+                    displayName: question.correctAnswer.displayName,
                 })
             },
         })
@@ -87,7 +89,7 @@ module.exports.playGuessWhichFact = async ({
             gameId,
             action: actions.REVEAL_FAKE_FACT,
             roundNumber,
-            lie: question.correctAnswer.text,
+            fakeFact: [question.correctAnswer.text],
             displayName: question.correctAnswer.displayName,
         })
 
