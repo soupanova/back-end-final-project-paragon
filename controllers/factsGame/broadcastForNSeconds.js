@@ -10,7 +10,7 @@ module.exports.broadcastForNSeconds = async ({
     broadcastFunc,
     totalSeconds,
 }) => {
-    for (let secondsLeft = totalSeconds; secondsLeft > 0; --secondsLeft) {
+    for (let secondsLeft = totalSeconds; secondsLeft >= 0; --secondsLeft) {
         broadcastFunc(secondsLeft)
         await delay(1)
     }

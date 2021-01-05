@@ -4,6 +4,12 @@
 const { dynamoDbClient, FACTS_TABLE_NAME } = require('../db')
 
 module.exports.updateCurrentAnswer = async ({ gameId, playerId, choice }) => {
+    console.log(
+        'This is the update current answer',
+        { gameId },
+        { playerId },
+        { choice }
+    )
     const { Attributes: game } = await dynamoDbClient
         .update({
             TableName: FACTS_TABLE_NAME,
