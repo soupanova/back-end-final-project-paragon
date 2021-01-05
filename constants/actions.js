@@ -16,6 +16,9 @@ module.exports = {
      * action (as success confirmation) or an "ERROR".
      */
     JOIN_GAME: 'JOIN_GAME',
+
+    LOBBY: 'LOBBY',
+
     /**
      * Server sends this when the game has begun
      * (after the "readying" period).

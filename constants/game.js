@@ -5,8 +5,8 @@ module.exports.STATE = {
 }
 
 module.exports.secondsToWait = {
-    afterGameStarted: 2,
-    forAnswer: 5,
+    afterGameStarted: 3,
+    forAnswer: 10,
     forAnswerBuffer: 1,
     beforeReveal: 5,
     afterReveal: 5,

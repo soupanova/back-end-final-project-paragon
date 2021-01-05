@@ -5,6 +5,9 @@ const { startGame } = require('../../controllers/factsGame/startGame')
 const { createGame } = require('../../controllers/factsGame/createGame')
 const { playGame } = require('../../controllers/factsGame/playGame')
 const { joinGame } = require('../../controllers/factsGame/joinGame')
+const {
+    broadcastForNSeconds,
+} = require('../../controllers/factsGame/broadcastForNSeconds')
 
 const actions = require('../../constants/actions')
 const {
@@ -26,9 +29,9 @@ const socketActionHandlers = {
                 data
             )
         }
-
-        const { totalRounds = 1, readyingDuration = 2 } = data
-
+        console.log({ data })
+        const { rounds: totalRounds, readyingDuration = 10 } = data
+        console.log(totalRounds)
         let gameId
         /**
          * Try to create the game.
@@ -46,13 +49,32 @@ const socketActionHandlers = {
                 return
             }
             gameId = game.gameId
-            sendData({ action: data.action, gameId })
+            // sendData({ action: data.action, gameId })
         }
-
+        await delay(1)
         console.log('Waiting for players to join')
-        await delay(readyingDuration)
-        console.log(`Finished waiting for players to join ${readyingDuration}`)
 
+        {
+            const broadcastToGame = await createBroadcastFunction({
+                gameId,
+                broadcastFunc: broadcastData,
+            })
+            await broadcastForNSeconds({
+                broadcastFunc: (secondsLeft) => {
+                    broadcastToGame({
+                        gameId,
+                        action: actions.LOBBY,
+                        secondsLeft,
+                    })
+                },
+                totalSeconds: readyingDuration,
+            })
+
+            console.log(
+                `Finished waiting for players to join ${readyingDuration}`
+            )
+        }
+        // await delay(3)
         /**
          * Try to start the game.
          */
@@ -66,6 +88,7 @@ const socketActionHandlers = {
                 broadcastToGame({ gameId, action: actions.ERROR, error })
                 try {
                     await deleteGame({ gameId })
+                    console.log(`Game with gameID ${gameId} has been deleted`)
                 } catch (error) {
                     console.error(error)
                 }
@@ -78,7 +101,7 @@ const socketActionHandlers = {
         })
         broadcastToGame({ gameId, action: actions.GAME_STARTED })
 
-        await delay(2)
+        // await delay(1)
 
         /**
          * Try to play the game.
