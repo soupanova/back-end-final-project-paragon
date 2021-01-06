@@ -25,10 +25,15 @@ const defaultHandler = (game) => {
  * who created it).
  */
 module.exports.createNewGame = async (options = {}) => {
-    const { creator, totalRounds, asyncSaveHandler = defaultHandler } = options
+    const {
+        gameId = uuidv4(),
+        creator,
+        totalRounds,
+        asyncSaveHandler = defaultHandler,
+    } = options
 
     const newGame = {
-        gameId: uuidv4(),
+        gameId,
         createdAt: Date.now(),
         state: STATE.READYING,
         totalRounds,
