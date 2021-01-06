@@ -38,7 +38,8 @@ const socketActionHandlers = {
                 data
             )
         }
-        const { rounds: totalRounds, readyingDuration = 5 } = data
+        const { rounds: totalRounds, readyingDuration = 15 } = data
+
         let gameId
         /**
          * Try to create the game.
@@ -117,7 +118,7 @@ const socketActionHandlers = {
         })
         broadcastToGame({ gameId, action: actions.GAME_STARTED })
 
-        // await delay(1)
+        await delay(3)
 
         /**
          * Try to play the game.
