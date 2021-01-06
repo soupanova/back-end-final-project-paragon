@@ -30,7 +30,7 @@ const socketActionHandlers = {
             )
         }
         console.log({ data })
-        const { rounds: totalRounds, readyingDuration = 10 } = data
+        const { rounds: totalRounds, readyingDuration = 30 } = data
         console.log(totalRounds)
         let gameId
         /**
