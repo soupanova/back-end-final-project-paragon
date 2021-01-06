@@ -4,7 +4,10 @@
 const { startGame } = require('../../controllers/factsGame/startGame')
 const { createGame } = require('../../controllers/factsGame/createGame')
 const { playGame } = require('../../controllers/factsGame/playGame')
-const { joinGame } = require('../../controllers/factsGame/joinGame')
+const {
+    joinGame,
+    joinDummyGame,
+} = require('../../controllers/factsGame/joinGame')
 const {
     broadcastForNSeconds,
 } = require('../../controllers/factsGame/broadcastForNSeconds')
@@ -120,6 +123,30 @@ const socketActionHandlers = {
 
         // Check here if data is good.
         const { error } = await joinGame({
+            gameId,
+            playerDetails: {
+                ...data.player,
+                socketId,
+            },
+        })
+
+        if (error) {
+            sendData({
+                action: actions.ERROR,
+                gameId,
+                error: 'Failed to join game',
+            })
+            return
+        }
+
+        sendData({ action: actions.JOIN_GAME, gameId })
+    },
+
+    async JOIN_DUMMY_GAME({ data, sendData, socketId }) {
+        const { gameId } = data
+
+        // Check here if data is good.
+        const { error } = await joinDummyGame({
             gameId,
             playerDetails: {
                 ...data.player,

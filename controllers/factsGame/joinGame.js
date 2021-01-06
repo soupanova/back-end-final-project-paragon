@@ -22,14 +22,16 @@ module.exports.joinGame = async ({ playerDetails, gameId }) => {
 
 /**
  * Create the game (add some players) and write to database.
+ * Only for dev/testing purposes.
  */
 module.exports.joinDummyGame = async ({ playerDetails, gameId }) => {
     const [creator, ...otherPlayers] = Array.from({ length: 2 }, (_, i) => {
         return createNewPlayer({
             playerId: uuidv4(),
-            fact: `Player ${i} fact`,
-            lie: `Player ${i} lie`,
-            displayName: `Player ${i}`,
+            fact: `Player #${i}'s fact`,
+            lie: `Player #${i}'s lie`,
+            displayName: `Player #${i}`,
+            socketId: uuidv4(),
         })
     })
 
