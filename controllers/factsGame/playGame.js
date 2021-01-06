@@ -9,7 +9,6 @@ const { deleteGame } = require('../../models/factsGame/deleteGame')
 const actions = require('../../constants/actions')
 
 module.exports.playGame = async ({ gameId, broadcastToGame }) => {
-    console.log('Playing the game')
     try {
         const { totalRounds } = await getGame({ gameId })
 
@@ -29,7 +28,7 @@ module.exports.playGame = async ({ gameId, broadcastToGame }) => {
                         score,
                     }
                 })
-                .sort((a, b) => a.score - b.score)
+                .sort((a, b) => b.score - a.score)
 
             broadcastToGame({
                 gameId,
