@@ -20,18 +20,26 @@ const {
 
 const { delay } = require('../../controllers/factsGame/delay')
 const { SOCKET_ID_PROPERTY } = require('../../constants/websocket')
+const { v4: uuidv4 } = require('uuid')
+const { addPlayerToGame } = require('../../models/factsGame/addPlayerToGame')
+const { createNewPlayer } = require('../../models/factsGame/createNewPlayer')
 
 const socketActionHandlers = {
-    async CREATE_AND_JOIN_GAME({ data, sendData, broadcastData, socketId }) {
+    async CREATE_AND_JOIN_GAME({
+        data,
+        sendData,
+        broadcastData,
+        socketId,
+        onCreate,
+    }) {
         if (data.gameId) {
             return console.warn(
                 `Request for new game shouldn't already contain a "gameId".`,
                 data
             )
         }
-        console.log({ data })
         const { rounds: totalRounds, readyingDuration = 15 } = data
-        console.log(totalRounds)
+
         let gameId
         /**
          * Try to create the game.
@@ -49,18 +57,27 @@ const socketActionHandlers = {
                 return
             }
             gameId = game.gameId
-            // sendData({ action: data.action, gameId })
+            if ('function' === typeof onCreate) {
+                onCreate({ gameId })
+            }
         }
         await delay(1)
-        console.log('Waiting for players to join')
 
         {
-            const broadcastToGame = await createBroadcastFunction({
-                gameId,
-                broadcastFunc: broadcastData,
-            })
+            console.log('Waiting for players to join')
             await broadcastForNSeconds({
-                broadcastFunc: (secondsLeft) => {
+                broadcastFunc: async (secondsLeft) => {
+                    /**
+                     * Created on each invocation as players will be joining during this stage
+                     * and having a stale/fixed reference to socketIds would mean a player whose just
+                     * joined would not receive the LOBBY event (the game would just hang for them
+                     * until the game starts).
+                     */
+                    const broadcastToGame = await createBroadcastFunction({
+                        gameId,
+                        broadcastFunc: broadcastData,
+                    })
+
                     broadcastToGame({
                         gameId,
                         action: actions.LOBBY,
@@ -139,6 +156,55 @@ const socketActionHandlers = {
         sendData({ action: actions.JOIN_GAME, gameId })
     },
 
+    async JOIN_DUMMY_GAME({ data, socketId, sendData, broadcastData }) {
+        console.log('JOIN_DUMMY_GAME running', { data })
+
+        const [creator, ...otherPlayers] = Array.from({ length: 2 }, (_, i) => {
+            return {
+                playerId: uuidv4(),
+                fact: `Player #${i}'s fact`,
+                lie: `Player #${i}'s lie`,
+                displayName: `Player #${i}`,
+                socketId: uuidv4(),
+            }
+        })
+
+        const gameId = await new Promise((resolve) => {
+            socketActionHandlers.CREATE_AND_JOIN_GAME({
+                data: {
+                    action: actions.CREATE_AND_JOIN_GAME,
+                    rounds: 3,
+                    player: {
+                        displayName: creator.displayName,
+                        fact: creator.fact,
+                        lie: creator.lie,
+                        playerId: creator.playerId,
+                    },
+                },
+                sendData: ({}) => void 0,
+                socketId: creator.socketId,
+                broadcastData,
+                onCreate: ({ gameId }) => {
+                    console.log('Hooked into game successfully', { gameId })
+                    resolve(gameId)
+                },
+            })
+        })
+
+        for (const playerArgs of otherPlayers) {
+            const player = createNewPlayer(playerArgs)
+            await addPlayerToGame({ gameId, player })
+        }
+
+        const joinedPlayer = createNewPlayer({
+            ...data.player,
+            socketId,
+        })
+        await addPlayerToGame({ gameId, player: joinedPlayer })
+
+        sendData({ action: actions.JOIN_GAME, gameId })
+    },
+
     async ANSWER({ data, sendData }) {
         const { gameId, playerId, choice } = data
 
@@ -191,7 +257,10 @@ module.exports.registerActionHandlers = (socket, broadcastData) => {
         console.log('Received', parsed)
 
         const messageDoesntHaveGameIdButShould =
-            !parsed.gameId && parsed.action !== actions.CREATE_AND_JOIN_GAME
+            !parsed.gameId &&
+            parsed.action !== actions.CREATE_AND_JOIN_GAME &&
+            parsed.action !== 'JOIN_DUMMY_GAME'
+
         if (messageDoesntHaveGameIdButShould) {
             console.warn('No game ID', parsed)
             return sendData({
