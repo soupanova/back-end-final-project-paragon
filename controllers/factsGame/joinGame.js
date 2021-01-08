@@ -3,8 +3,9 @@
 
 const { addPlayerToGame } = require('../../models/factsGame/addPlayerToGame')
 const { createNewPlayer } = require('../../models/factsGame/createNewPlayer')
-const { createNewGame } = require('../../models/factsGame/createNewGame')
+const { getGame } = require('../../models/factsGame/getGame')
 const { v4: uuidv4 } = require('uuid')
+const { STATE } = require('../../constants/game')
 
 /**
  * Create the game (with creator) and write to database.
@@ -15,7 +16,13 @@ module.exports.joinGame = async ({ playerDetails, gameId }) => {
         const game = await addPlayerToGame({ gameId, player })
         return { game }
     } catch (err) {
-        console.error('Failed to join game', err)
-        return { error: 'Failed to join game' }
+        let error = 'Failed to join game.'
+        if ('ConditionalCheckFailedException' === err.name) {
+            const game = await getGame({ gameId })
+            if (STATE.READYING !== game.status) {
+                error = 'Sorry, this particular game can no longer be joined.'
+            }
+        }
+        return { error }
     }
 }
