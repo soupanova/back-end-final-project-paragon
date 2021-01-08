@@ -38,7 +38,7 @@ const socketActionHandlers = {
                 data
             )
         }
-        const { rounds: totalRounds, readyingDuration = 60 } = data
+        const { rounds: totalRounds, readyingDuration = 90 } = data
 
         let gameId
         /**
