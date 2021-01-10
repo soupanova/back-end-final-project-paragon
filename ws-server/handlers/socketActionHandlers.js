@@ -53,7 +53,11 @@ const socketActionHandlers = {
                 totalRounds,
             })
             if (error) {
-                sendData({ action: actions.ERROR, gameId: 'none', error })
+                sendData({
+                    action: actions.ERROR_GAME_NOT_CREATED,
+                    gameId: 'none',
+                    error,
+                })
                 return
             }
             gameId = game.gameId
@@ -88,10 +92,9 @@ const socketActionHandlers = {
             })
 
             console.log(
-                `Finished waiting for players to join ${readyingDuration}`
+                `Finished waiting ${readyingDuration} seconds for players to join.`
             )
         }
-        // await delay(3)
         /**
          * Try to start the game.
          */
@@ -102,7 +105,11 @@ const socketActionHandlers = {
                     gameId,
                     broadcastFunc: broadcastData,
                 })
-                broadcastToGame({ gameId, action: actions.ERROR, error })
+                broadcastToGame({
+                    gameId,
+                    action: actions.ERROR_GAME_NOT_STARTED,
+                    error,
+                })
                 try {
                     await deleteGame({ gameId })
                     console.log(`Game with gameID ${gameId} has been deleted`)
@@ -146,7 +153,7 @@ const socketActionHandlers = {
 
         if (error) {
             sendData({
-                action: actions.ERROR,
+                action: actions.ERROR_GAME_NOT_JOINED,
                 gameId,
                 error: 'Failed to join game',
             })
@@ -213,7 +220,7 @@ const socketActionHandlers = {
         } catch (err) {
             console.error(err)
             sendData({
-                action: actions.ERROR,
+                action: actions.ERROR_ANSWER_NOT_UPDATED,
                 gameId,
                 error: 'Failed to update answer',
             })
@@ -252,19 +259,19 @@ module.exports.registerActionHandlers = (socket, broadcastData) => {
         const { parsed, parsingError } = tryToParseJson(rawData)
         if (parsingError) {
             console.log('Malformed message', rawData)
-            return sendData({ action: 'ERROR', error: parsingError })
+            return sendData({ action: actions.ERROR, error: parsingError })
         }
         console.log('Received', parsed)
 
         const messageDoesntHaveGameIdButShould =
             !parsed.gameId &&
             parsed.action !== actions.CREATE_AND_JOIN_GAME &&
-            parsed.action !== 'JOIN_DUMMY_GAME'
+            parsed.action !== actions.JOIN_DUMMY_GAME
 
         if (messageDoesntHaveGameIdButShould) {
             console.warn('No game ID', parsed)
             return sendData({
-                action: 'ERROR',
+                action: actions.ERROR,
                 error: 'gameId missing',
                 received: rawData,
             })

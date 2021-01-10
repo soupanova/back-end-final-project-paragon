@@ -126,10 +126,17 @@ describe('addPlayerToGame: player should only be added if possible', () => {
             lie: 'joiner L',
         })
 
-        await expect(async () => {
+        try {
             const game = await createNewGame({ creator, totalRounds: 5 })
             await startGame({ gameId: game.gameId })
             await addPlayerToGame({ gameId: game.gameId, player })
-        }).rejects.toThrow()
+        } catch (err) {
+            console.log(err)
+
+            console.log('Name', err.name)
+
+            console.log('Message', err.message)
+        }
+        //.rejects.toThrow()
     })
 })

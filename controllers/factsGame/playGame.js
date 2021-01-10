@@ -46,7 +46,7 @@ module.exports.playGame = async ({ gameId, broadcastToGame }) => {
         }
     } catch (err) {
         console.error(err)
-        return { err: 'Failed to play game' }
+        return { error: 'Failed to play game' }
     }
     return {}
 }

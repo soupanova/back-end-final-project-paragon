@@ -39,8 +39,6 @@ module.exports.createNewGame = async (options = {}) => {
         currentTurnId: null,
     }
 
-    console.log('Game created', newGame)
-
     /**
      * Runtime validation of the game object before sticking it in the
      * database. Making sure its values and types are "correct".

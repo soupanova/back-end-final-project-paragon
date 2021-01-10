@@ -1,5 +1,6 @@
 'use strict'
 
+const { STATE } = require('../../constants/game')
 const { dynamoDbClient, FACTS_TABLE_NAME } = require('../db')
 const { playerSchema } = require('../schemas/readying')
 
@@ -13,9 +14,9 @@ const defaultHandler = ({ gameId, player }) => {
             Key: { gameId },
             UpdateExpression: 'SET players.#playerId = :newPlayer',
             ConditionExpression:
-                '(#state = :readying) AND attribute_not_exists(players.#playerId)',
+                '(#state = :readying) OR attribute_exists(players.#playerId)',
             ExpressionAttributeValues: {
-                ':readying': 'READYING',
+                ':readying': STATE.READYING,
                 ':newPlayer': player,
             },
             ExpressionAttributeNames: {
