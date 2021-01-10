@@ -16,6 +16,8 @@ module.exports.joinGame = async ({ playerDetails, gameId }) => {
         const game = await addPlayerToGame({ gameId, player })
         return { game }
     } catch (err) {
+        console.error('Failed to join game', err)
+
         let error = 'Failed to join game.'
 
         switch (err.name) {
