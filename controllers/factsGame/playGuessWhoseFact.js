@@ -40,7 +40,6 @@ module.exports.playGuessWhoseFact = async ({
                     participants,
                     leaderboard,
                     secondsLeft,
-                    turnId: game.currentTurnId,
                 })
             },
         })

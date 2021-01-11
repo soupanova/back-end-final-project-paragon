@@ -24,8 +24,7 @@ module.exports.playGuessWhichFact = async ({
 }) => {
     {
         const game = await getGame({ gameId })
-        // const game = await initialiseTurn({ gameId })
-        const [question] = game.rounds[roundNumber - 1].slice(1)
+        const { whichFact: question } = game.rounds[roundNumber - 1]
 
         await broadcastForNSeconds({
             totalSeconds: secondsToWait.forRevealFactAnswer,
@@ -34,7 +33,7 @@ module.exports.playGuessWhichFact = async ({
                     gameId,
                     roundNumber,
                     action: actions.GUESS_FAKE_FACT_TIMER,
-                    facts: question.statements,
+                    facts: question.facts,
                     secondsLeft,
                     turnId: game.currentTurnId,
                     displayName: question.correctAnswer.displayName,
