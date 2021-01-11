@@ -15,7 +15,7 @@ const { broadcastForNSeconds } = require('./broadcastForNSeconds')
 const { delay } = require('./delay')
 
 /**
- * Handles second question: "guess which fact is fake"
+ * Handles second question: "guess which fact is true"
  */
 module.exports.playGuessWhichFact = async ({
     gameId,
