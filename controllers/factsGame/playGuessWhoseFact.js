@@ -32,7 +32,7 @@ module.exports.playGuessWhoseFact = async ({
         const leaderboard = createLeaderboard(Object.values(game.players))
 
         await broadcastForNSeconds({
-            totalSeconds: secondsToWait.forAnswer,
+            totalSeconds: secondsToWait.forRevealWhoAnswer,
             broadcastFunc(secondsLeft) {
                 broadcastToGame({
                     gameId,

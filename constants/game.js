@@ -6,8 +6,9 @@ module.exports.STATE = {
 
 module.exports.secondsToWait = {
     afterGameStarted: 3,
-    forAnswer: 30,
+    forRevealWhoAnswer: 30,
+    forRevealFactAnswer: 15,
     forAnswerBuffer: 1,
-    beforeReveal: 5,
+    beforeReveal: 3,
     afterReveal: 5,
 }

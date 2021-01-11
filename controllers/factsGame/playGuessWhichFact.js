@@ -28,7 +28,7 @@ module.exports.playGuessWhichFact = async ({
         const [question] = game.rounds[roundNumber - 1].slice(1)
 
         await broadcastForNSeconds({
-            totalSeconds: secondsToWait.forAnswer,
+            totalSeconds: secondsToWait.forRevealFactAnswer,
             broadcastFunc(secondsLeft) {
                 broadcastToGame({
                     gameId,
