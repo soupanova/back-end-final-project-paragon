@@ -38,7 +38,7 @@ module.exports.playGuessWhoseFact = async ({
             .sort((a, b) => a.score - b.score)
 
         await broadcastForNSeconds({
-            totalSeconds: secondsToWait.forAnswer,
+            totalSeconds: secondsToWait.forRevealWhoAnswer,
             broadcastFunc(secondsLeft) {
                 broadcastToGame({
                     gameId,
