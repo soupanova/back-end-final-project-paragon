@@ -51,18 +51,11 @@ module.exports = {
      * ("Whose fact is it?") is being shown and counted down.
      */
     GUESS_WHO_TIMER: 'GUESS_WHO_TIMER',
-    /**
-     * Server sends this to after the first question's countdown
-     * ("Whose fact is it?") has finished. Clients should respond
-     * with users' answers.
-     */
-    GUESS_WHO_CHOICE: 'GUESS_WHO_CHOICE',
     REVEAL_WHO_TIMER: 'REVEAL_WHO_TIMER',
     REVEAL_WHO: 'REVEAL_WHO',
-    GUESS_FAKE_FACT_TIMER: 'GUESS_FAKE_FACT_TIMER',
-    GUESS_FAKE_FACT_CHOICE: 'GUESS_FAKE_FACT_CHOICE',
-    REVEAL_FAKE_FACT_TIMER: 'REVEAL_FAKE_FACT_TIMER',
-    REVEAL_FAKE_FACT: 'REVEAL_FAKE_FACT',
+    GUESS_WHICH_FACT_TIMER: 'GUESS_WHICH_FACT_TIMER',
+    REVEAL_WHICH_FACT_TIMER: 'REVEAL_WHICH_FACT_TIMER',
+    REVEAL_WHICH_FACT: 'REVEAL_WHICH_FACT',
     PODIUM: 'PODIUM',
     ANSWER: 'ANSWER',
 }
