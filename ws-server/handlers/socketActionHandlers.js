@@ -23,6 +23,7 @@ const { SOCKET_ID_PROPERTY } = require('../../constants/websocket')
 const { v4: uuidv4 } = require('uuid')
 const { addPlayerToGame } = require('../../models/factsGame/addPlayerToGame')
 const { createNewPlayer } = require('../../models/factsGame/createNewPlayer')
+const { getGame } = require('../../models/factsGame/getGame')
 
 const socketActionHandlers = {
     async CREATE_AND_JOIN_GAME({
@@ -38,7 +39,7 @@ const socketActionHandlers = {
                 data
             )
         }
-        const { rounds: totalRounds, readyingDuration = 90 } = data
+        const { rounds: totalRounds, readyingDuration = 5 } = data
 
         let gameId
         /**
@@ -61,6 +62,10 @@ const socketActionHandlers = {
                 return
             }
             gameId = game.gameId
+            sendData({
+                action: actions.CREATE_AND_JOIN_GAME,
+                gameId: gameId,
+            })
             if ('function' === typeof onCreate) {
                 onCreate({ gameId })
             }
@@ -77,16 +82,27 @@ const socketActionHandlers = {
                      * joined would not receive the LOBBY event (the game would just hang for them
                      * until the game starts).
                      */
-                    const broadcastToGame = await createBroadcastFunction({
-                        gameId,
-                        broadcastFunc: broadcastData,
-                    })
 
-                    broadcastToGame({
-                        gameId,
-                        action: actions.LOBBY,
-                        secondsLeft,
-                    })
+                    const game = await getGame({ gameId })
+
+                    const players = Object.values(game.players)
+
+                    const playersDisplayNames = players.map(
+                        ({ displayName }) => displayName
+                    )
+                    const playersSocketIds = players.map(
+                        ({ socketId }) => socketId
+                    )
+
+                    broadcastData(
+                        {
+                            gameId,
+                            action: actions.LOBBY,
+                            secondsLeft,
+                            players: playersDisplayNames,
+                        },
+                        playersSocketIds
+                    )
                 },
                 totalSeconds: readyingDuration,
             })
@@ -155,7 +171,7 @@ const socketActionHandlers = {
             sendData({
                 action: actions.ERROR_GAME_NOT_JOINED,
                 gameId,
-                error: 'Failed to join game',
+                error,
             })
             return
         }
@@ -222,10 +238,12 @@ const socketActionHandlers = {
             sendData({
                 action: actions.ERROR_ANSWER_NOT_UPDATED,
                 gameId,
-                error: 'Failed to update answer',
+                error:
+                    "Sorry, failed to update answer! (It's not you, it's us.)",
             })
+            return
         }
-        sendData({ action: actions.ANSWER, gameId, choice })
+        sendData({ action: actions.ANSWER, gameId, choiceId: choice })
     },
 
     $default({ data }) {

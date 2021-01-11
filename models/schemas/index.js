@@ -13,5 +13,5 @@ module.exports = {
     shuffledFactAndLie: Joi.array()
         .items(Joi.ref('...fact'), Joi.ref('...lie'))
         .length(2),
-    totalRounds: Joi.number().required().min(1).max(100).integer(),
+    totalRounds: Joi.number().required().min(1).max(10).integer(),
 }
