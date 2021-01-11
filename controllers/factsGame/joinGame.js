@@ -4,7 +4,6 @@
 const { addPlayerToGame } = require('../../models/factsGame/addPlayerToGame')
 const { createNewPlayer } = require('../../models/factsGame/createNewPlayer')
 const { getGame } = require('../../models/factsGame/getGame')
-const { v4: uuidv4 } = require('uuid')
 const { STATE } = require('../../constants/game')
 
 /**
