@@ -35,8 +35,7 @@ module.exports.playGuessWhichFact = async ({
                     action: actions.GUESS_FAKE_FACT_TIMER,
                     facts: question.facts,
                     secondsLeft,
-                    turnId: game.currentTurnId,
-                    displayName: question.correctAnswer.displayName,
+                    displayName: question.displayName,
                 })
             },
         })
@@ -53,21 +52,21 @@ module.exports.playGuessWhichFact = async ({
     {
         // Check + award players point where appropriate
         const game = await getGame({ gameId })
-
-        const [question] = game.rounds[roundNumber - 1].slice(1)
+        const { whichFact: question } = game.rounds[roundNumber - 1]
 
         // Increment players' scores if they got the answer right.
         console.log("About to increment players' scores")
-        const playerIdsWhoAnsweredCorrectly = Object.values(game.players)
+        const allPlayers = Object.values(game.players)
+        const playerIdsWhichAnsweredCorrectly = allPlayers
             .filter(
-                ({ currentAnswer }) =>
-                    currentAnswer === question.correctAnswer.choiceId
+                (player) =>
+                    player.currentAnswer.choiceId === question.correctChoiceId
             )
             .map(({ playerId }) => playerId)
 
         await incrementPlayersScores({
             gameId,
-            playerIds: playerIdsWhoAnsweredCorrectly,
+            playerIds: playerIdsWhichAnsweredCorrectly,
         })
         console.log("Incremented players' scores")
 
@@ -79,7 +78,7 @@ module.exports.playGuessWhichFact = async ({
                     roundNumber,
                     action: actions.REVEAL_FAKE_FACT_TIMER,
                     secondsLeft,
-                    displayName: question.correctAnswer.displayName,
+                    displayName: question.displayName,
                 })
             },
         })
@@ -88,8 +87,8 @@ module.exports.playGuessWhichFact = async ({
             gameId,
             action: actions.REVEAL_FAKE_FACT,
             roundNumber,
-            fakeFact: [question.correctAnswer.text],
-            displayName: question.correctAnswer.displayName,
+            trueFact: question.fact,
+            displayName: question.displayName,
         })
 
         await delay(secondsToWait.afterReveal)

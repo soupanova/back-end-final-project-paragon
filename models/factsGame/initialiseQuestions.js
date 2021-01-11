@@ -56,12 +56,14 @@ module.exports.initialiseQuestions = (game) => {
                         text: statement,
                     }
                 })
+                const correctChoice = choices.find(
+                    (choice) => player.fact === choice.text
+                )
                 return {
                     displayName: player.displayName,
                     choices,
-                    correctChoiceId: choices.find(
-                        (choice) => player.fact === choice.text
-                    ).choiceId,
+                    correctChoiceId: correctChoice.choiceId,
+                    fact: player.fact,
                 }
             })(),
         }
