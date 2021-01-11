@@ -78,7 +78,7 @@ const socketActionHandlers = {
                 broadcastFunc: async (secondsLeft) => {
                     /**
                      * Created on each invocation as players will be joining during this stage
-                     * and having a stale/fixed reference to socketIds would mean a player whose just
+                     * and having a stale/fixed reference to socketIds would mean a player who's just
                      * joined would not receive the LOBBY event (the game would just hang for them
                      * until the game starts).
                      */
