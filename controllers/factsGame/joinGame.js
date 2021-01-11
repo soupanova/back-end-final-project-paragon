@@ -18,21 +18,20 @@ module.exports.joinGame = async ({ playerDetails, gameId }) => {
     } catch (err) {
         console.error('Failed to join game', err)
 
-        let error = 'Failed to join game.'
+        let errorMessage = 'Failed to join game.'
 
-        switch (err.name) {
-            case 'ResourceNotFoundException':
-                error = "This particular game doesn't seem to exist."
-                break
-            case 'ConditionalCheckFailedException': {
-                const game = await getGame({ gameId })
-                if (STATE.READYING !== game.status) {
-                    error = 'This particular game can no longer be joined.'
-                }
-                break
+        if ('ConditionalCheckFailedException' === err.name) {
+            const game = await getGame({ gameId })
+
+            if (!game) {
+                errorMessage =
+                    "Sorry, this particular game doesn't seem to exist."
+            } else if (game.status !== STATE.READYING) {
+                errorMessage =
+                    'Sorry, this particular game has started and can no longer be joined.'
             }
         }
 
-        return { error }
+        return { error: errorMessage }
     }
 }
