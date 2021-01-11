@@ -7,6 +7,7 @@ const { playGuessWhichFact } = require('./playGuessWhichFact')
 const { delay } = require('./delay')
 const { deleteGame } = require('../../models/factsGame/deleteGame')
 const actions = require('../../constants/actions')
+const { createLeaderboard } = require('./createLeaderboard')
 
 module.exports.playGame = async ({ gameId, broadcastToGame }) => {
     try {
@@ -21,14 +22,7 @@ module.exports.playGame = async ({ gameId, broadcastToGame }) => {
         // All rounds have been played.
         {
             const game = await getGame({ gameId })
-            const leaderboard = Object.values(game.players)
-                .map(({ displayName, score }) => {
-                    return {
-                        displayName,
-                        score,
-                    }
-                })
-                .sort((a, b) => b.score - a.score)
+            const leaderboard = createLeaderboard(Object.values(game.players))
 
             broadcastToGame({
                 gameId,

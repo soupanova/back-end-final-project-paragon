@@ -12,6 +12,7 @@ const {
 // const { unlockAnswers } = require('../models/factsGame/unlockAnswers')
 
 const { broadcastForNSeconds } = require('./broadcastForNSeconds')
+const { createLeaderboard } = require('./createLeaderboard')
 const { delay } = require('./delay')
 
 /**
@@ -28,14 +29,7 @@ module.exports.playGuessWhoseFact = async ({
         const [question] = game.rounds[roundNumber - 1]
         const participants = game.cachedChoices
 
-        const leaderboard = Object.values(game.players)
-            .map(({ displayName, score }) => {
-                return {
-                    displayName,
-                    score,
-                }
-            })
-            .sort((a, b) => a.score - b.score)
+        const leaderboard = createLeaderboard(Object.values(game.players))
 
         await broadcastForNSeconds({
             totalSeconds: secondsToWait.forAnswer,
