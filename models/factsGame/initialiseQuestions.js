@@ -1,6 +1,7 @@
 // @ts-check
 'use strict'
 
+const { v4: uuidv4 } = require('uuid')
 const { dynamoDbClient, FACTS_TABLE_NAME } = require('../db')
 
 module.exports.initialiseQuestions = (game) => {
@@ -35,36 +36,35 @@ module.exports.initialiseQuestions = (game) => {
      * Create an array of "rounds", where each round has 2 questions.
      */
     const rounds = randomlySelectedPlayers.map((player) => {
-        /**
-         * Question 1: Whose fact is it?
-         */
-        const firstQuestion = {
-            statements: player.shuffledFactAndLie,
-            correctAnswer: {
-                choiceId: player.playerId,
-                text: player.displayName,
-            },
-        }
-
-        /**
-         * Question 2: Which fact was fake?
-         */
-        const secondQuestion = {
-            statements: player.shuffledFactAndLie,
-            choices: player.shuffledFactAndLie.map((statement) => {
-                return {
-                    choiceId: statement,
-                    text: statement,
-                }
-            }),
-            correctAnswer: {
-                choiceId: player.lie,
-                text: player.lie,
+        return {
+            /**
+             * Question 1: Whose facts are they?
+             */
+            whoseFact: {
                 displayName: player.displayName,
+                facts: player.shuffledFactAndLie,
+                choices: choicesForQuestion1,
+                correctChoiceId: player.playerId,
             },
+            /**
+             * Question 2: Which fact is true?
+             */
+            whichFact: (() => {
+                const choices = player.shuffledFactAndLie.map((statement) => {
+                    return {
+                        choiceId: uuidv4(),
+                        text: statement,
+                    }
+                })
+                return {
+                    displayName: player.displayName,
+                    choices,
+                    correctChoiceId: choices.find(
+                        (choice) => player.fact === choice.text
+                    ).choiceId,
+                }
+            })(),
         }
-
-        return [firstQuestion, secondQuestion]
     })
 
     /**
