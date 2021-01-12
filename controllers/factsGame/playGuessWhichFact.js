@@ -15,7 +15,7 @@ const { broadcastForNSeconds } = require('./broadcastForNSeconds')
 const { delay } = require('./delay')
 
 /**
- * Handles second question: "guess which fact is fake"
+ * Handles second question: "guess which fact is true"
  */
 module.exports.playGuessWhichFact = async ({
     gameId,
@@ -24,8 +24,7 @@ module.exports.playGuessWhichFact = async ({
 }) => {
     {
         const game = await getGame({ gameId })
-        // const game = await initialiseTurn({ gameId })
-        const [question] = game.rounds[roundNumber - 1].slice(1)
+        const { whichFact: question } = game.rounds[roundNumber - 1]
 
         await broadcastForNSeconds({
             totalSeconds: secondsToWait.forRevealFactAnswer,
@@ -33,11 +32,10 @@ module.exports.playGuessWhichFact = async ({
                 broadcastToGame({
                     gameId,
                     roundNumber,
-                    action: actions.GUESS_FAKE_FACT_TIMER,
-                    facts: question.statements,
+                    action: actions.GUESS_WHICH_FACT_TIMER,
+                    facts: question.facts,
                     secondsLeft,
-                    turnId: game.currentTurnId,
-                    displayName: question.correctAnswer.displayName,
+                    displayName: question.displayName,
                 })
             },
         })
@@ -54,21 +52,21 @@ module.exports.playGuessWhichFact = async ({
     {
         // Check + award players point where appropriate
         const game = await getGame({ gameId })
-
-        const [question] = game.rounds[roundNumber - 1].slice(1)
+        const { whichFact: question } = game.rounds[roundNumber - 1]
 
         // Increment players' scores if they got the answer right.
         console.log("About to increment players' scores")
-        const playerIdsWhoAnsweredCorrectly = Object.values(game.players)
+        const allPlayers = Object.values(game.players)
+        const playerIdsWhichAnsweredCorrectly = allPlayers
             .filter(
-                ({ currentAnswer }) =>
-                    currentAnswer === question.correctAnswer.choiceId
+                (player) =>
+                    player.currentAnswer.choiceId === question.correctChoiceId
             )
             .map(({ playerId }) => playerId)
 
         await incrementPlayersScores({
             gameId,
-            playerIds: playerIdsWhoAnsweredCorrectly,
+            playerIds: playerIdsWhichAnsweredCorrectly,
         })
         console.log("Incremented players' scores")
 
@@ -78,19 +76,19 @@ module.exports.playGuessWhichFact = async ({
                 broadcastToGame({
                     gameId,
                     roundNumber,
-                    action: actions.REVEAL_FAKE_FACT_TIMER,
+                    action: actions.REVEAL_WHICH_FACT_TIMER,
                     secondsLeft,
-                    displayName: question.correctAnswer.displayName,
+                    displayName: question.displayName,
                 })
             },
         })
 
         await broadcastToGame({
             gameId,
-            action: actions.REVEAL_FAKE_FACT,
+            action: actions.REVEAL_WHICH_FACT,
             roundNumber,
-            fakeFact: [question.correctAnswer.text],
-            displayName: question.correctAnswer.displayName,
+            fact: question.fact,
+            displayName: question.displayName,
         })
 
         await delay(secondsToWait.afterReveal)

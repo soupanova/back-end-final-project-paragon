@@ -14,7 +14,7 @@ const defaultHandler = ({ gameId, player }) => {
             Key: { gameId },
             UpdateExpression: 'SET players.#playerId = :newPlayer',
             ConditionExpression:
-                '(#state = :readying) OR attribute_exists(players.#playerId)',
+                '(#state = :readying) AND attribute_not_exists(players.#playerId)',
             ExpressionAttributeValues: {
                 ':readying': STATE.READYING,
                 ':newPlayer': player,

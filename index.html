@@ -52,8 +52,8 @@
                 },
                 REVEAL_WHO_TIMER: () => {},
                 REVEAL_WHO: () => {},
-                GUESS_FAKE_FACT_TIMER: () => {},
-                GUESS_FAKE_FACT_CHOICE: ({ turnId }) => {
+                GUESS_WHICH_FACT_TIMER: () => {},
+                GUESS_WHICH_FACT_CHOICE: ({ turnId }) => {
                     ws.send(
                         JSON.stringify({
                             action: 'CHOSEN_FACT',
@@ -63,9 +63,9 @@
                         })
                     )
                 },
-                REVEAL_FAKE_FACT() {},
-                CHOSEN_FAKE_FACT_CONFIRMATION: () => {},
-                REVEAL_FAKE_FACT_TIMER: () => {},
+                REVEAL_WHICH_FACT() {},
+                CHOSEN_WHICH_FACT_CONFIRMATION: () => {},
+                REVEAL_WHICH_FACT_TIMER: () => {},
                 PODIUM: () => {},
             }
 
