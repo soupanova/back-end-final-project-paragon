@@ -131,13 +131,19 @@ module.exports.playGuessWhoseFact = async ({
             },
         })
 
-        broadcastToGame({
-            gameId,
-            action: actions.REVEAL_WHO,
-            roundNumber,
-            displayName: question.displayName,
-        })
+        {
+            const game = await getGame({ gameId })
+            const leaderboard = createLeaderboard(Object.values(game.players))
 
-        await delay(secondsToWait.afterReveal)
+            broadcastToGame({
+                gameId,
+                action: actions.REVEAL_WHO,
+                roundNumber,
+                displayName: question.displayName,
+                leaderboard,
+            })
+
+            await delay(secondsToWait.afterReveal)
+        }
     }
 }
