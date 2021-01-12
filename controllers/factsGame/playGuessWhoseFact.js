@@ -62,7 +62,7 @@ module.exports.playGuessWhoseFact = async ({
         const playerIdsWhichAnsweredCorrectly = allPlayers
             .filter(
                 (player) =>
-                    player.currentAnswer.choiceId === question.correctChoiceId
+                    player.currentAnswer?.choiceId === question.correctChoiceId
             )
             .map(({ playerId }) => playerId)
 
