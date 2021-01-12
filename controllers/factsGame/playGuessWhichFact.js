@@ -32,7 +32,7 @@ module.exports.playGuessWhichFact = async ({
                 broadcastToGame({
                     gameId,
                     roundNumber,
-                    action: actions.GUESS_FAKE_FACT_TIMER,
+                    action: actions.GUESS_WHICH_FACT_TIMER,
                     facts: question.facts,
                     secondsLeft,
                     displayName: question.displayName,
@@ -76,7 +76,7 @@ module.exports.playGuessWhichFact = async ({
                 broadcastToGame({
                     gameId,
                     roundNumber,
-                    action: actions.REVEAL_FAKE_FACT_TIMER,
+                    action: actions.REVEAL_WHICH_FACT_TIMER,
                     secondsLeft,
                     displayName: question.displayName,
                 })
@@ -85,7 +85,7 @@ module.exports.playGuessWhichFact = async ({
 
         await broadcastToGame({
             gameId,
-            action: actions.REVEAL_FAKE_FACT,
+            action: actions.REVEAL_WHICH_FACT,
             roundNumber,
             trueFact: question.fact,
             displayName: question.displayName,
