@@ -108,10 +108,12 @@ module.exports.playGuessWhoseFact = async ({
             .sort((a, b) => b.votesCount - a.votesCount)
             .slice(0, 3)
             .map(({ displayName, votesCount }) => {
-                const displayPercentage = votesCount / allPlayers.length
+                const unroundedPercentage =
+                    (votesCount / allPlayers.length) * 100
+                const roundedPercentage = Math.round(unroundedPercentage)
                 return {
                     displayName,
-                    displayPercentage,
+                    displayPercentage: `${roundedPercentage}%`,
                 }
             })
 
