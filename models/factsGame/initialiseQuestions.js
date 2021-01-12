@@ -61,7 +61,7 @@ module.exports.initialiseQuestions = (game) => {
                 )
                 return {
                     displayName: player.displayName,
-                    choices,
+                    facts: choices,
                     correctChoiceId: correctChoice.choiceId,
                     fact: player.fact,
                 }
