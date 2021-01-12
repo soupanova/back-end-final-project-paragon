@@ -11,7 +11,9 @@ module.exports.broadcastForNSeconds = async ({
     totalSeconds,
 }) => {
     for (let secondsLeft = totalSeconds; secondsLeft >= 0; --secondsLeft) {
-        broadcastFunc(secondsLeft)
-        await delay(1)
+        /**
+         * Wait a minimum of 1 second.
+         */
+        await Promise.all([broadcastFunc(secondsLeft), delay(1)])
     }
 }
