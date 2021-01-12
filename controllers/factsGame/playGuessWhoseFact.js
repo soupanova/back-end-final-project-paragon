@@ -31,7 +31,7 @@ module.exports.playGuessWhoseFact = async ({
 
         await broadcastForNSeconds({
             totalSeconds: secondsToWait.forRevealWhoAnswer,
-            broadcastFunc(secondsLeft) {
+            async broadcastFunc(secondsLeft) {
                 broadcastToGame({
                     gameId,
                     roundNumber,
@@ -77,7 +77,7 @@ module.exports.playGuessWhoseFact = async ({
 
         await broadcastForNSeconds({
             totalSeconds: secondsToWait.beforeReveal,
-            broadcastFunc(secondsLeft) {
+            async broadcastFunc(secondsLeft) {
                 broadcastToGame({
                     gameId,
                     roundNumber,
@@ -87,7 +87,7 @@ module.exports.playGuessWhoseFact = async ({
             },
         })
 
-        await broadcastToGame({
+        broadcastToGame({
             gameId,
             action: actions.REVEAL_WHO,
             roundNumber,

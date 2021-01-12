@@ -75,7 +75,7 @@ const socketActionHandlers = {
         {
             console.log('Waiting for players to join')
             await broadcastForNSeconds({
-                broadcastFunc: async (secondsLeft) => {
+                async broadcastFunc(secondsLeft) {
                     /**
                      * Created on each invocation as players will be joining during this stage
                      * and having a stale/fixed reference to socketIds would mean a player who's just
