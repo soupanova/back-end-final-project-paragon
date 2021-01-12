@@ -4,7 +4,11 @@
 const { v4: uuidv4 } = require('uuid')
 const { dynamoDbClient, FACTS_TABLE_NAME } = require('../db')
 
-module.exports.incrementPlayersScores = async ({ gameId, playerIds }) => {
+module.exports.incrementPlayersScores = async ({
+    gameId,
+    playerIds,
+    incrementBy = 1,
+}) => {
     /**
      * Build "update expression" dynamically based on the
      * players passed in.
@@ -15,7 +19,7 @@ module.exports.incrementPlayersScores = async ({ gameId, playerIds }) => {
                 ...acc,
                 updateExpressions: [
                     ...acc.updateExpressions,
-                    `#players.#p${i}.#score = #players.#p${i}.#score + :one`,
+                    `#players.#p${i}.#score = #players.#p${i}.#score + :incrementBy`,
                 ],
                 expressionAttributeNames: {
                     ...acc.expressionAttributeNames,
@@ -32,7 +36,7 @@ module.exports.incrementPlayersScores = async ({ gameId, playerIds }) => {
             },
             expressionAttributeValues: {
                 ':uuid': uuidv4(),
-                ':one': playerIds.length > 0 ? 1 : undefined,
+                ':incrementBy': playerIds.length > 0 ? incrementBy : undefined,
             },
         }
     )

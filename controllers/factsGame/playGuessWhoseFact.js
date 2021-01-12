@@ -69,6 +69,7 @@ module.exports.playGuessWhoseFact = async ({
         await incrementPlayersScores({
             gameId,
             playerIds: playerIdsWhichAnsweredCorrectly,
+            incrementBy: 2,
         })
 
         /**
