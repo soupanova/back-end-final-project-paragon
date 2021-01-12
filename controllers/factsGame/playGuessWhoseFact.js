@@ -58,9 +58,6 @@ module.exports.playGuessWhoseFact = async ({
         const game = await getGame({ gameId })
         const { whoseFact: question } = game.rounds[roundNumber - 1]
 
-        // Increment players' scores if they got the answer right.
-        console.log("About to increment players' scores")
-
         const allPlayers = Object.values(game.players)
         const playerIdsWhichAnsweredCorrectly = allPlayers
             .filter(
@@ -73,7 +70,50 @@ module.exports.playGuessWhoseFact = async ({
             gameId,
             playerIds: playerIdsWhichAnsweredCorrectly,
         })
-        console.log("Incremented players' scores")
+
+        /**
+         * Receiving array of players objects
+         * Transforming into:
+         * {
+         *      playerId: {
+         *          displayName: string,
+         *              votesCount: number,
+         *      }
+         * }
+         * Sorting values (of object) descendingly
+         * Slicing top 3
+         * Returning array of objects with properties:
+         *      displayName
+         *      percentage
+         */
+        const votesPerPlayer = allPlayers.reduce((accum, player) => {
+            const playerIdToLookUp = player.currentAnswer?.choiceId
+            const votedFor = game.players[playerIdToLookUp]
+
+            if (undefined === votedFor) {
+                return accum
+            }
+
+            const updates = {
+                [playerIdToLookUp]: {
+                    displayName: votedFor.displayName,
+                    votesCount: 1 + (accum[playerIdToLookUp] ?? 0),
+                },
+            }
+
+            return { ...accum, ...updates }
+        }, {})
+
+        const votePercentages = Object.values(votesPerPlayer)
+            .sort((a, b) => b.votesCount - a.votesCount)
+            .slice(0, 3)
+            .map(({ displayName, votesCount }) => {
+                const displayPercentage = votesCount / allPlayers.length
+                return {
+                    displayName,
+                    displayPercentage,
+                }
+            })
 
         await broadcastForNSeconds({
             totalSeconds: secondsToWait.beforeReveal,
@@ -82,6 +122,7 @@ module.exports.playGuessWhoseFact = async ({
                     gameId,
                     roundNumber,
                     action: actions.REVEAL_WHO_TIMER,
+                    votePercentages,
                     secondsLeft,
                 })
             },
