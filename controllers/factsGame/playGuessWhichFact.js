@@ -13,6 +13,7 @@ const { getGame } = require('../../models/factsGame/getGame')
 
 const { broadcastForNSeconds } = require('./broadcastForNSeconds')
 const { delay } = require('./delay')
+const { createLeaderboard } = require('./createLeaderboard')
 
 /**
  * Handles second question: "guess which fact is true"
@@ -83,14 +84,20 @@ module.exports.playGuessWhichFact = async ({
             },
         })
 
-        broadcastToGame({
-            gameId,
-            action: actions.REVEAL_WHICH_FACT,
-            roundNumber,
-            fact: question.fact,
-            displayName: question.displayName,
-        })
+        {
+            const game = await getGame({ gameId })
+            const leaderboard = createLeaderboard(Object.values(game.players))
 
-        await delay(secondsToWait.afterReveal)
+            broadcastToGame({
+                gameId,
+                action: actions.REVEAL_WHICH_FACT,
+                roundNumber,
+                fact: question.fact,
+                displayName: question.displayName,
+                leaderboard,
+            })
+
+            await delay(secondsToWait.afterReveal)
+        }
     }
 }
