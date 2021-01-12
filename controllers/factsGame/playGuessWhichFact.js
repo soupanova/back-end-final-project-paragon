@@ -87,7 +87,7 @@ module.exports.playGuessWhichFact = async ({
             gameId,
             action: actions.REVEAL_WHICH_FACT,
             roundNumber,
-            trueFact: question.fact,
+            fact: question.fact,
             displayName: question.displayName,
         })
 
