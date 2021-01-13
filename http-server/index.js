@@ -3,6 +3,7 @@
 
 const http = require('http')
 const { webSocketServer } = require('../ws-server')
+const { authenticateRequest } = require('./authenticate')
 
 /**
  * @type {http.RequestListener}
@@ -25,12 +26,20 @@ const requestHandler = (req, res) => {
 const httpServer = http.createServer(requestHandler)
 
 httpServer.on('upgrade', (req, socket, head) => {
-    console.log('Upgrade request', req.headers)
+    console.log('Upgrade request', {
+        ...req.headers,
+        'sec-websocket-protocol': req.headers['sec-websocket-protocol'] && 'ws',
+    })
 
-    if (false) {
-        socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n')
+    const shouldRejectRequest =
+        'websocket' !== req.headers.upgrade ||
+        !req.headers['sec-websocket-protocol'] ||
+        !authenticateRequest(req)
+
+    if (shouldRejectRequest) {
+        socket.write('HTTP/1.1 403 Unauthorized\r\n\r\n')
         socket.destroy()
-        return
+        return console.log('Rejected request')
     }
 
     webSocketServer.handleUpgrade(req, socket, head, (webSocket, req) => {
