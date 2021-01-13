@@ -30,6 +30,8 @@
     "dependencies": {
         "aws-sdk": "^2.817.0",
         "joi": "^17.3.0",
+        "jsonwebtoken": "^8.5.1",
+        "jwk-to-pem": "^2.0.4",
         "uuid": "^8.3.2",
         "ws": "^7.4.1"
     },
