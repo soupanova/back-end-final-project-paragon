@@ -6,6 +6,7 @@ const { playGuessWhoseFact } = require('./playGuessWhoseFact')
 const { playGuessWhichFact } = require('./playGuessWhichFact')
 const { delay } = require('./delay')
 const { deleteGame } = require('../../models/factsGame/deleteGame')
+const { initialiseTurn } = require('../../models/factsGame/initialiseTurn')
 const actions = require('../../constants/actions')
 const { createLeaderboard } = require('./createLeaderboard')
 
@@ -16,7 +17,9 @@ module.exports.playGame = async ({ gameId, broadcastToGame }) => {
         for (let roundNumber = 1; roundNumber <= totalRounds; ++roundNumber) {
             console.log(`Round #${roundNumber}`)
             await playGuessWhoseFact({ gameId, roundNumber, broadcastToGame })
+            await initialiseTurn({ gameId })
             await playGuessWhichFact({ gameId, roundNumber, broadcastToGame })
+            await initialiseTurn({ gameId })
         }
 
         // All rounds have been played.
