@@ -7,12 +7,9 @@ const { getGame } = require('../../models/factsGame/getGame')
 const {
     incrementPlayersScores,
 } = require('../../models/factsGame/incrementPlayersScores')
-// const { initialiseTurn } = require('../models/factsGame/initialiseTurn')
-// const { lockAnswers } = require('../models/factsGame/lockAnswers')
-// const { unlockAnswers } = require('../models/factsGame/unlockAnswers')
-
 const { broadcastForNSeconds } = require('./broadcastForNSeconds')
 const { createLeaderboard } = require('./createLeaderboard')
+const { createVotePercentages } = require('./createVotePercentages')
 const { delay } = require('./delay')
 
 /**
@@ -72,51 +69,7 @@ module.exports.playGuessWhoseFact = async ({
             incrementBy: 2,
         })
 
-        /**
-         * Receiving array of players objects
-         * Transforming into:
-         * {
-         *      playerId: {
-         *          displayName: string,
-         *              votesCount: number,
-         *      }
-         * }
-         * Sorting values (of object) descendingly
-         * Slicing top 3
-         * Returning array of objects with properties:
-         *      displayName
-         *      percentage
-         */
-        const votesPerPlayer = allPlayers.reduce((accum, player) => {
-            const playerIdToLookUp = player.currentAnswer?.choiceId
-            const votedFor = game.players[playerIdToLookUp]
-
-            if (undefined === votedFor) {
-                return accum
-            }
-
-            const updates = {
-                [playerIdToLookUp]: {
-                    displayName: votedFor.displayName,
-                    votesCount: 1 + (accum[playerIdToLookUp] ?? 0),
-                },
-            }
-
-            return { ...accum, ...updates }
-        }, {})
-
-        const votePercentages = Object.values(votesPerPlayer)
-            .sort((a, b) => b.votesCount - a.votesCount)
-            .slice(0, 3)
-            .map(({ displayName, votesCount }) => {
-                const unroundedPercentage =
-                    (votesCount / allPlayers.length) * 100
-                const roundedPercentage = Math.round(unroundedPercentage)
-                return {
-                    displayName,
-                    displayPercentage: `${roundedPercentage}%`,
-                }
-            })
+        const votePercentages = createVotePercentages(game.players)
 
         await broadcastForNSeconds({
             totalSeconds: secondsToWait.beforeReveal,

@@ -4,6 +4,7 @@ const { validate: uuidValidate, v4: uuidv4 } = require('uuid')
 const { STATE } = require('../../constants/game')
 const { createNewGame } = require('./createNewGame')
 const { createNewPlayer } = require('./createNewPlayer')
+const schemas = require('../schemas')
 
 /**
  * See: https://jestjs.io/docs/en/getting-started
@@ -30,10 +31,8 @@ describe('createNewGame: validate object returned', () => {
         newGame = await createNewGame(gameOptions)
     })
 
-    expect()
-
     it('should have a valid game id', () => {
-        expect(uuidValidate(newGame.gameId)).toBe(true)
+        expect(schemas.gameId.validate(newGame.gameId).error).toBeUndefined()
     })
 
     it('should be in a readying state to begin with', () => {
@@ -117,7 +116,7 @@ describe('createNewGame: totalRounds input validation', () => {
 
     it('should throw an error if totalRounds is a positive non-integer', async () => {
         await expect(
-            createNewGame({ creator, totalRounds: 10.1 })
+            createNewGame({ creator, totalRounds: 9.1 })
         ).rejects.toThrowError(/"totalRounds" must be an integer/)
     })
 

@@ -22,7 +22,7 @@ const playerSchema = Joi.object({
  * Schema for a game whilst it's in a READYING state.
  */
 const gameSchema = Joi.object({
-    gameId: schemas.uuidv4,
+    gameId: schemas.gameId,
     createdAt: Joi.date().timestamp('javascript'),
     state: Joi.string().required().valid(STATE.READYING),
     totalRounds: schemas.totalRounds,
