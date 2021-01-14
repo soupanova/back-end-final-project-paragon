@@ -1,10 +1,11 @@
 // @ts-check
 'use strict'
 
-const { v4: uuidv4 } = require('uuid')
-const { nanoid } = require('nanoid')
 const { dynamoDbClient, FACTS_TABLE_NAME } = require('../db')
 const { STATE } = require('../../constants/game')
+
+const { customAlphabet } = require('nanoid')
+const nanoid = customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', 10)
 
 const { gameSchema } = require('../schemas/readying')
 
