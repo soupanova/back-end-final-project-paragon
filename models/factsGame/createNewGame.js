@@ -2,6 +2,7 @@
 'use strict'
 
 const { v4: uuidv4 } = require('uuid')
+const { nanoid } = require('nanoid')
 const { dynamoDbClient, FACTS_TABLE_NAME } = require('../db')
 const { STATE } = require('../../constants/game')
 
@@ -28,7 +29,7 @@ module.exports.createNewGame = async (options = {}) => {
     const { creator, totalRounds, asyncSaveHandler = defaultHandler } = options
 
     const newGame = {
-        gameId: uuidv4(),
+        gameId: nanoid(),
         createdAt: Date.now(),
         state: STATE.READYING,
         totalRounds,
