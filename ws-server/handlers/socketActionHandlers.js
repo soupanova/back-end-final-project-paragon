@@ -111,6 +111,11 @@ const socketActionHandlers = {
                 `Finished waiting ${readyingDuration} seconds for players to join.`
             )
         }
+    },
+
+    async START_GAME({ data, broadcastData }) {
+        const { gameId } = data
+
         /**
          * Try to start the game.
          */
