@@ -24,6 +24,7 @@ const playerSchema = Joi.object({
 const gameSchema = Joi.object({
     gameId: schemas.gameId,
     createdAt: Joi.date().timestamp('javascript'),
+    createdBy: schemas.uuidv4,
     state: Joi.string().required().valid(STATE.READYING),
     totalRounds: schemas.totalRounds,
     currentRound: Joi.any().required().valid(null),

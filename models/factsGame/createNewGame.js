@@ -32,6 +32,7 @@ module.exports.createNewGame = async (options = {}) => {
     const newGame = {
         gameId: nanoid(),
         createdAt: Date.now(),
+        createdBy: creator.playerId,
         state: STATE.READYING,
         totalRounds,
         currentRound: null,
