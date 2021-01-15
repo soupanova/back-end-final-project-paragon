@@ -1,6 +1,7 @@
 // @ts-check
 'use strict'
 
+const { STATE } = require('../../constants/game')
 const { startGame } = require('../../controllers/factsGame/startGame')
 const { createGame } = require('../../controllers/factsGame/createGame')
 const { playGame } = require('../../controllers/factsGame/playGame')
@@ -72,54 +73,77 @@ const socketActionHandlers = {
         }
         await delay(1)
 
+        /**
+         * TODO: Replace this with emitting the LOBBY event on:
+         * CREATE_AND_JOIN_GAME, JOIN_GAME
+         */
         {
-            console.log('Waiting for players to join')
-            await broadcastForNSeconds({
-                async broadcastFunc(secondsLeft) {
-                    /**
-                     * Created on each invocation as players will be joining during this stage
-                     * and having a stale/fixed reference to socketIds would mean a player who's just
-                     * joined would not receive the LOBBY event (the game would just hang for them
-                     * until the game starts).
-                     */
+            const game = await getGame({ gameId })
+            const players = Object.values(game.players)
+            const playersDisplayNames = players.map(
+                ({ displayName }) => displayName
+            )
+            const playersSocketIds = players.map(({ socketId }) => socketId)
 
-                    const game = await getGame({ gameId })
-
-                    const players = Object.values(game.players)
-
-                    const playersDisplayNames = players.map(
-                        ({ displayName }) => displayName
-                    )
-                    const playersSocketIds = players.map(
-                        ({ socketId }) => socketId
-                    )
-
-                    broadcastData(
-                        {
-                            gameId,
-                            action: actions.LOBBY,
-                            secondsLeft,
-                            players: playersDisplayNames,
-                        },
-                        playersSocketIds
-                    )
+            broadcastData(
+                {
+                    gameId,
+                    action: actions.LOBBY,
+                    players: playersDisplayNames,
                 },
-                totalSeconds: readyingDuration,
-            })
-
-            console.log(
-                `Finished waiting ${readyingDuration} seconds for players to join.`
+                playersSocketIds
             )
         }
+
+        // {
+        //     console.log('Waiting for players to join')
+        //     await broadcastForNSeconds({
+        //         async broadcastFunc(_) {
+        //             /**
+        //              * Created on each invocation as players will be joining during this stage
+        //              * and having a stale/fixed reference to socketIds would mean a player who's just
+        //              * joined would not receive the LOBBY event (the game would just hang for them
+        //              * until the game starts).
+        //              */
+
+        //             const game = await getGame({ gameId })
+
+        //             const players = Object.values(game.players)
+
+        //             const playersDisplayNames = players.map(
+        //                 ({ displayName }) => displayName
+        //             )
+        //             const playersSocketIds = players.map(
+        //                 ({ socketId }) => socketId
+        //             )
+
+        //             broadcastData(
+        //                 {
+        //                     gameId,
+        //                     action: actions.LOBBY,
+        //                     // secondsLeft,
+        //                     players: playersDisplayNames,
+        //                 },
+        //                 playersSocketIds
+        //             )
+        //         },
+        //         totalSeconds: readyingDuration,
+        //     })
+        // }
     },
 
     async START_GAME({ data, broadcastData }) {
-        const { gameId } = data
+        const { gameId, playerId } = data
 
         /**
          * Try to start the game.
          */
         {
+            const game = await getGame({ gameId })
+            if (game.createdBy !== playerId) {
+                return console.log("Game not started, as player isn't creator.")
+            }
+
             const { error } = await startGame({ gameId })
             if (error) {
                 const broadcastToGame = await createBroadcastFunction({
@@ -160,11 +184,11 @@ const socketActionHandlers = {
         }
     },
 
-    async JOIN_GAME({ data, sendData, socketId }) {
+    async JOIN_GAME({ data, sendData, socketId, broadcastData }) {
         const { gameId } = data
 
         // Check here if data is good.
-        const { error } = await joinGame({
+        const { error, game } = await joinGame({
             gameId,
             playerDetails: {
                 ...data.player,
@@ -182,6 +206,23 @@ const socketActionHandlers = {
         }
 
         sendData({ action: actions.JOIN_GAME, gameId })
+
+        {
+            const players = Object.values(game.players)
+            const playersDisplayNames = players.map(
+                ({ displayName }) => displayName
+            )
+            const playersSocketIds = players.map(({ socketId }) => socketId)
+
+            broadcastData(
+                {
+                    gameId,
+                    action: actions.LOBBY,
+                    players: playersDisplayNames,
+                },
+                playersSocketIds
+            )
+        }
     },
 
     async JOIN_DUMMY_GAME({ data, socketId, sendData, broadcastData }) {
