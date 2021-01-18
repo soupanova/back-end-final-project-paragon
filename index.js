@@ -3,7 +3,9 @@
 
 const { HTTP_PORT } = require('./config/http')
 
-const httpServer = require('./http-server')
+const { createHttpServer } = require('./http-server')
+
+const httpServer = createHttpServer()
 
 httpServer.listen(HTTP_PORT, () => {
     console.log(`HTTP server listening on ${HTTP_PORT}.`)
