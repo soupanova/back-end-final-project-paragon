@@ -28,7 +28,17 @@ module.exports.initialiseQuestions = (game) => {
                 sortBy: Math.random(),
             }
         })
-        .sort((a, b) => a.sortBy - b.sortBy)
+        .sort((a, b) => {
+            /**
+             * For demo only.
+             */
+            if (/Arshi/i.test(a.player.displayName)) {
+                return 1
+            } else if (/Arshi/i.test(b.player.displayName)) {
+                return -1
+            }
+            return a.sortBy - b.sortBy
+        })
         .map(({ player }) => player)
         .slice(0, totalRounds)
 
