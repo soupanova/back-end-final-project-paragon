@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
+    </head>
+    <body>
+        <input type="text" />
+        <h1></h1>
+        <main>
+            <ul style="white-space: pre"></ul>
+        </main>
+        <button id="start">Start game</button>
+        <button id="join">Join game</button>
+
+        <script>
+            const input = document.querySelector('input')
+
+            const h1 = document.querySelector('h1')
+            const startButton = document.querySelector('#start')
+            const joinButton = document.querySelector('#join')
+            const ul = document.querySelector('ul')
+
+            let ws = new WebSocket('ws://localhost:8080')
+            let game = { gameId: undefined }
+
+            const handlers = {
+                START_GAME_REQUEST: ({ gameId }) => {
+                    if (!gameId) {
+                        throw new Error('Bad game id ' + gameId)
+                    }
+                    game.gameId = gameId
+                    h1.textContent = gameId
+                },
+                JOIN_GAME: () => {},
+                CHOSEN_PERSON_CONFIRMATION: () => {},
+                GAME_STARTED: () => {},
+                GUESS_WHO_TIMER: ({ participants, facts }) => {
+                    game.participants = participants
+                    game.facts = facts
+                },
+                GUESS_WHO_CHOICE: ({ turnId, participants }) => {
+                    ws.send(
+                        JSON.stringify({
+                            action: 'CHOSEN_PERSON',
+                            gameId: game.gameId,
+                            turnId,
+                            choice: participants[0].choiceId,
+                        })
+                    )
+                },
+                REVEAL_WHO_TIMER: () => {},
+                REVEAL_WHO: () => {},
+                GUESS_WHICH_FACT_TIMER: () => {},
+                GUESS_WHICH_FACT_CHOICE: ({ turnId }) => {
+                    ws.send(
+                        JSON.stringify({
+                            action: 'CHOSEN_FACT',
+                            gameId: game.gameId,
+                            turnId,
+                            choice: game.facts[0],
+                        })
+                    )
+                },
+                REVEAL_WHICH_FACT() {},
+                CHOSEN_WHICH_FACT_CONFIRMATION: () => {},
+                REVEAL_WHICH_FACT_TIMER: () => {},
+                PODIUM: () => {},
+            }
+
+            ws.onmessage = ({ data: serialised }) => {
+                console.log(serialised)
+
+                const li = document.createElement('li')
+                li.textContent = serialised
+                ul.appendChild(li)
+
+                const data = JSON.parse(serialised)
+
+                if (!handlers[data.action]) {
+                    return console.warn('Unsupported action', data.action)
+                }
+
+                handlers[data.action](data)
+                console.log('Ran', data.action)
+            }
+
+            startButton.addEventListener('click', () => {
+                ws.send(
+                    JSON.stringify({
+                        action: 'CREATE_AND_JOIN_GAME',
+                        displayName: 'Abe',
+                        fact: 'Some statement (but really a fact)',
+                        lie: 'Some statement (but really a lie)',
+                        // gameId: game.gameId,
+                    })
+                )
+            })
+
+            joinButton.addEventListener('click', () => {
+                ws.send(
+                    JSON.stringify({
+                        action: 'JOIN_GAME_REQUEST',
+                        gameId: input.value || game.gameId,
+                        player: {
+                            displayName: 'Abe',
+                            fact: 'Some statement (but really a fact)',
+                            lie: 'Some statement (but really a lie)',
+                        },
+                    })
+                )
+            })
+        </script>
+    </body>
+</html>

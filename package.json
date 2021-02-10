@@ -1,23 +1,42 @@
 {
-  "name": "back-end-final-project-paragon",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/SchoolOfCode/back-end-final-project-paragon.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/SchoolOfCode/back-end-final-project-paragon/issues"
-  },
-  "homepage": "https://github.com/SchoolOfCode/back-end-final-project-paragon#readme",
-  "devDependencies": {
-    "eslint-config-prettier": "^7.0.0"
-  }
+    "name": "back-end-final-project-paragon",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "start": "node ./index.js",
+        "dev-ws": "nodemon -r dotenv/config ./index.js",
+        "test": "jest --setupFiles dotenv/config",
+        "reinitialiseTable": "node -r dotenv/config ./models/db/scripts/reinitialiseTable.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/SchoolOfCode/back-end-final-project-paragon.git"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/SchoolOfCode/back-end-final-project-paragon/issues"
+    },
+    "homepage": "https://github.com/SchoolOfCode/back-end-final-project-paragon#readme",
+    "devDependencies": {
+        "@types/jest": "^26.0.19",
+        "dotenv": "^8.2.0",
+        "eslint-config-prettier": "^7.0.0",
+        "jest": "^26.6.3",
+        "nodemon": "^2.0.6"
+    },
+    "dependencies": {
+        "aws-sdk": "^2.817.0",
+        "joi": "^17.3.0",
+        "jsonwebtoken": "^8.5.1",
+        "jwk-to-pem": "^2.0.4",
+        "nanoid": "^3.1.20",
+        "uuid": "^8.3.2",
+        "ws": "^7.4.1"
+    },
+    "engines": {
+        "node": "14.13.0"
+    }
 }
